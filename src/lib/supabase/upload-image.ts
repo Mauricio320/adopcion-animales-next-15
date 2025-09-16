@@ -79,15 +79,19 @@ export const uploadImageToSupabase = async (
 // Función para eliminar imagen de Supabase
 export const deleteImageFromSupabase = async (fileName: string) => {
   try {
-    const { error } = await supabase.storage
+    console.log(`Intentando eliminar archivo: ${fileName} del bucket: ${MASCOTAS_BUCKET}`);
+
+    const { data, error } = await supabase.storage
       .from(MASCOTAS_BUCKET)
       .remove([fileName]);
 
     if (error) {
+      console.error("Error de Supabase Storage:", error);
       throw new Error(`Error al eliminar imagen: ${error.message}`);
     }
 
-    return { success: true };
+    console.log("Resultado de eliminación:", data);
+    return { success: true, data };
   } catch (error) {
     console.error("Error en deleteImageFromSupabase:", error);
     return {

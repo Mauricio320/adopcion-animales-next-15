@@ -1,7 +1,7 @@
 "use client";
 
 import { useAnimals } from "@/hooks/useAnimals";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ListaAnimalesCard } from "./ListaAnimalesCard";
 import { PaginationControls } from "./PaginationControls";
 import { Modal } from "./Modal";
@@ -26,23 +26,15 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [filtros, setFiltros] = useState({
+  // Memoizar los filtros para evitar recrear el objeto en cada render
+  const filtros = useMemo(() => ({
     especie_id: especie_id,
     municipio_id: municipio_id,
     sexo_id: sexo_id,
     es_perdido,
-  });
+  }), [especie_id, municipio_id, sexo_id, es_perdido]);
 
   const { data: animals, loading } = useAnimals(filtros);
-
-  useEffect(() => {
-    setFiltros({
-      especie_id: especie_id,
-      municipio_id: municipio_id,
-      sexo_id: sexo_id,
-      es_perdido,
-    });
-  }, [es_perdido, municipio_id, especie_id, sexo_id]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;

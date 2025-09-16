@@ -2,11 +2,12 @@
 
 import { DashboardCard } from "../common/DashboardCard";
 import { PageHeader } from "../common/PageHeader";
+import { FaHome } from "react-icons/fa";
 
 export const AdopcionesContent = () => {
   return (
     <div>
-      <PageHeader title="Mis Adopciones" icon="🏠" redirectPath="/dashboard" />
+      <PageHeader title="Mis Adopciones" icon={<FaHome className="w-8 h-8 text-emerald-600" />} redirectPath="/dashboard" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <DashboardCard
