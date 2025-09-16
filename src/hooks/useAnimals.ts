@@ -117,7 +117,8 @@ export const useAnimals = (options: IUseAnimalsOptions = {}) => {
 
   useEffect(() => {
     fetchAnimals();
-  }, [fetchAnimals]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     refetch: fetchAnimals,

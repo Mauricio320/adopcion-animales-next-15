@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { RolesEnum } from "@/types/enums/enums";
+import { RolesEnum, RolesLabels } from "@/types/enums/enums";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -13,24 +13,6 @@ const MenuBar = () => {
   const { signOut } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLLIElement>(null);
-
-  // Función para obtener el nombre del rol personalizado
-  const getRolDisplayName = (rol: string | undefined): string => {
-    if (!rol) return "Sin rol";
-
-    switch (rol) {
-      case RolesEnum.SUPER_ADMIN:
-        return "Super Administrador";
-      case RolesEnum.ADMIN:
-        return "Administrador";
-      case RolesEnum.STAFF:
-        return "Staff (Albergue)";
-      case RolesEnum.USUARIO:
-        return "Ciudadano - Puede Adoptar";
-      default:
-        return rol;
-    }
-  };
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
@@ -190,8 +172,17 @@ const MenuBar = () => {
                           <div className="text-gray-800">
                             {user.usuario?.nombre} {user.usuario?.apellidos}
                           </div>
+                          {user.usuario?.usuario_albergue?.albergues
+                            ?.nombre && (
+                            <div className="text-xs uppercase text-gray-600 font-medium truncate overflow-hidden whitespace-nowrap max-w-[180px]">
+                              {
+                                user.usuario?.usuario_albergue?.albergues
+                                  ?.nombre
+                              }
+                            </div>
+                          )}
                           <div className="text-xs text-gray-600 font-medium uppercase tracking-wide">
-                            {getRolDisplayName(user.usuario?.rol)}
+                            {RolesLabels[user.usuario?.rol as RolesEnum]}
                           </div>
                         </div>
                       </div>
@@ -200,8 +191,6 @@ const MenuBar = () => {
                     {/* Opciones del menú */}
                     <button
                       onClick={() => {
-                        // Aquí puedes agregar la navegación o lógica que necesites
-                        console.log("Ir a Mi Cuenta");
                         setIsDropdownOpen(false);
                       }}
                       className="w-full cursor-pointer flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors duration-200"
