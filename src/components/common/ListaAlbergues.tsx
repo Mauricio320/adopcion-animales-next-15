@@ -1,0 +1,180 @@
+"use client";
+
+import { useAlbergues } from "@/hooks/useAlbergues";
+
+import { useState, useEffect } from "react";
+import { AlbergueCard } from "./AlbergueCard";
+import { PaginationControls } from "./PaginationControls";
+import { IMunicipio } from "@/types/interfaces/municipio";
+
+interface ListaAlberguesProps {
+  className?: string;
+  itemsPerPage?: number;
+  municipio_id?: number;
+  municipios: IMunicipio[];
+}
+
+export const ListaAlbergues: React.FC<ListaAlberguesProps> = ({
+  className = "",
+  itemsPerPage = 9,
+  municipio_id,
+  municipios,
+}) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filtros, setFiltros] = useState({
+    municipio_id: municipio_id,
+  });
+
+  const { data: albergues, loading, error } = useAlbergues(filtros);
+
+  useEffect(() => {
+    setFiltros({
+      municipio_id: municipio_id,
+    });
+    setCurrentPage(1); // Reiniciar página cuando cambien los filtros
+  }, [municipio_id]);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAlbergues = albergues.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(albergues.length / itemsPerPage);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 450, behavior: "smooth" });
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, 5);
+      } else if (currentPage >= totalPages - 2) {
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+          pages.push(i);
+        }
+      }
+    }
+
+    return pages;
+  };
+
+  const getMunicipioNombre = () => {
+    if (!municipio_id) return "Todos los municipios";
+    const municipio = municipios.find((m) => m.id === municipio_id);
+    return municipio ? municipio.nombre : `Municipio ${municipio_id}`;
+  };
+
+  if (error) {
+    return (
+      <div className={`w-full ${className}`}>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+          <div className="text-red-600 text-lg mb-2">
+            ⚠️ Error al cargar albergues
+          </div>
+          <p className="text-red-700">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`w-full ${className}`}>
+      {/* Header con información del filtro */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-emerald-800">
+              Albergues en {getMunicipioNombre()}
+            </h2>
+            {!loading && (
+              <p className="text-gray-600 mt-1">
+                {albergues.length} albergue{albergues.length !== 1 ? "s" : ""}{" "}
+                encontrado{albergues.length !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Paginación superior - Solo mostrar si hay resultados */}
+      {!loading && albergues.length > 0 && totalPages > 1 && (
+        <div className="mb-6">
+          <PaginationControls
+            onPreviousPage={goToPreviousPage}
+            getPageNumbers={getPageNumbers}
+            onNextPage={goToNextPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onGoToPage={goToPage}
+          />
+        </div>
+      )}
+
+      {/* Contenido principal */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <span className="ml-3 text-gray-600">Cargando albergues...</span>
+        </div>
+      ) : albergues.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="text-6xl mb-4">🏠</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            No hay albergues disponibles
+          </h3>
+          <p className="text-gray-500 max-w-md">
+            {municipio_id
+              ? `No se encontraron albergues en ${getMunicipioNombre()}.`
+              : "No hay albergues registrados en el sistema."}
+          </p>
+          <p className="text-sm text-emerald-600 mt-3">
+            💡 Intenta seleccionar otro municipio
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {currentAlbergues.map((albergue) => (
+            <AlbergueCard key={albergue.id} albergue={albergue} />
+          ))}
+        </div>
+      )}
+
+      {/* Paginación inferior - Solo mostrar si hay resultados */}
+      {!loading && albergues.length > 0 && totalPages > 1 && (
+        <div className="mt-8">
+          <PaginationControls
+            onPreviousPage={goToPreviousPage}
+            getPageNumbers={getPageNumbers}
+            onNextPage={goToNextPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onGoToPage={goToPage}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
