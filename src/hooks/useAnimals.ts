@@ -241,3 +241,4 @@ export const UpdateAnimalMutation = async ({
     return { error };
   }
 };
+

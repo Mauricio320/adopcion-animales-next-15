@@ -35,7 +35,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   return (
     <div className={`mb-8 ${className}`}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between text-gray-500">
         <div
           className={`flex items-center ${redirectPath ? 'cursor-pointer hover:text-gray-700 transition-colors duration-200' : ''}`}
           onClick={redirectPath ? handleRedirect : undefined}

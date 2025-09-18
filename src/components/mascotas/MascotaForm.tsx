@@ -9,7 +9,10 @@ import { useTipoEdadAnimal } from "@/hooks/useTipoEdadAnimal";
 import React, { useState, useEffect } from "react";
 import { ImageUploader } from "../common/ImageUploader";
 import { PageHeader } from "../common/PageHeader";
-import { uploadImageToSupabase, deleteImageFromSupabase } from "@/lib/supabase/upload-image";
+import {
+  uploadImageToSupabase,
+  deleteImageFromSupabase,
+} from "@/lib/supabase/upload-image";
 import { CreateAnimalMutation, UpdateAnimalMutation } from "@/hooks/useAnimals";
 import { IAnimal } from "@/types/interfaces/animal";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -58,7 +61,7 @@ interface MascotaFormProps {
 export const MascotaForm: React.FC<MascotaFormProps> = ({
   animal,
   onSuccess,
-  redirectPath = "/mascotas/mis-mascotas"
+  redirectPath = "/mascotas/mis-mascotas",
 }) => {
   const { user } = useAuthContext();
   const { showBlockUI, hideBlockUI } = useBlockUI();
@@ -147,45 +150,51 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      showBlockUI(animal ? "Actualizando Mascota..." : "Registrando Mascota...");
+      showBlockUI(
+        animal ? "Actualizando Mascota..." : "Registrando Mascota..."
+      );
 
       let imageUrl = formData.imagen_url;
 
       // Manejar imagen
       if (imgFile) {
-        // Si hay una imagen anterior, intentar eliminarla
         if (originalImageUrl) {
-          console.log("Intentando eliminar imagen anterior:", originalImageUrl);
-
           try {
-            // Extraer el nombre del archivo de la URL
-            const fileName = originalImageUrl.split('/').pop();
+            const fileName = originalImageUrl.split("/").pop();
             if (fileName) {
-              console.log("Nombre del archivo a eliminar:", fileName);
-              const deleteResult = await deleteImageFromSupabase(fileName);
-              console.log("Resultado de eliminación:", deleteResult);
+              const deleteResult = await deleteImageFromSupabase(
+                fileName,
+                "mascotas-imagenes"
+              );
 
               if (!deleteResult.success) {
-                console.warn("No se pudo eliminar la imagen anterior, pero continuando con la subida...");
+                console.warn(
+                  "No se pudo eliminar la imagen anterior, pero continuando con la subida..."
+                );
               }
             } else {
-              console.error("No se pudo extraer el nombre del archivo de la URL:", originalImageUrl);
+              console.error(
+                "No se pudo extraer el nombre del archivo de la URL:",
+                originalImageUrl
+              );
             }
           } catch (deleteError) {
-            console.warn("Error al eliminar imagen anterior, pero continuando con la subida:", deleteError);
+            console.warn(
+              "Error al eliminar imagen anterior, pero continuando con la subida:",
+              deleteError
+            );
           }
         }
 
-        // Subir nueva imagen
-        console.log("Subiendo nueva imagen...");
-        const uploadResult = await uploadImageToSupabase(imgFile, `mascota-${Date.now()}`);
-        console.log("Resultado de subida:", uploadResult);
+        const uploadResult = await uploadImageToSupabase(
+          imgFile,
+          `mascota-${Date.now()}`,
+          "mascotas-imagenes"
+        );
 
         if (uploadResult.success && uploadResult.url) {
           imageUrl = uploadResult.url;
-          console.log("Nueva URL de imagen:", imageUrl);
         } else {
-          console.error("Error al subir la imagen:", uploadResult.error);
           throw new Error("Error al subir la nueva imagen");
         }
       }
@@ -223,8 +232,11 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
 
       hideBlockUI();
     } catch (error) {
-      console.error(`Error al ${animal ? 'actualizar' : 'registrar'} mascota:`, error);
-      alert(`Error al ${animal ? 'actualizar' : 'registrar'} la mascota`);
+      console.error(
+        `Error al ${animal ? "actualizar" : "registrar"} mascota:`,
+        error
+      );
+      alert(`Error al ${animal ? "actualizar" : "registrar"} la mascota`);
       hideBlockUI();
     } finally {
       setIsSubmitting(false);
@@ -232,7 +244,7 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
     }
   };
 
-  if (isLoading)   return <LoadingSpinner text="Cargando formulario..." />;
+  if (isLoading) return <LoadingSpinner text="Cargando formulario..." />;
 
   const isEditMode = !!animal;
 
@@ -240,7 +252,13 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
     <div>
       <PageHeader
         title={isEditMode ? "Editar Mascota" : "Registrar Nueva Mascota"}
-        icon={isEditMode ? <FaEdit className="w-8 h-8 text-emerald-600" /> : <FaPlus className="w-8 h-8 text-emerald-600" />}
+        icon={
+          isEditMode ? (
+            <FaEdit className="w-8 h-8 text-emerald-600" />
+          ) : (
+            <FaPlus className="w-8 h-8 text-emerald-600" />
+          )
+        }
         redirectPath="/mascotas/mis-mascotas"
       />
 
@@ -553,8 +571,10 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 {isEditMode ? "Actualizando..." : "Registrando..."}
               </div>
+            ) : isEditMode ? (
+              "Actualizar Mascota"
             ) : (
-              isEditMode ? "Actualizar Mascota" : "Registrar Mascota"
+              "Registrar Mascota"
             )}
           </button>
         </div>

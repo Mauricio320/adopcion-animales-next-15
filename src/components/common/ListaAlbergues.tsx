@@ -44,43 +44,6 @@ export const ListaAlbergues: React.FC<ListaAlberguesProps> = ({
     window.scrollTo({ top: 450, behavior: "smooth" });
   };
 
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      goToPage(currentPage + 1);
-    }
-  };
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxPagesToShow = 5;
-
-    if (totalPages <= maxPagesToShow) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, 5);
-      } else if (currentPage >= totalPages - 2) {
-        for (let i = totalPages - 4; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-          pages.push(i);
-        }
-      }
-    }
-
-    return pages;
-  };
-
   const getMunicipioNombre = () => {
     if (!municipio_id) return "Todos los municipios";
     const municipio = municipios.find((m) => m.id === municipio_id);
@@ -123,12 +86,9 @@ export const ListaAlbergues: React.FC<ListaAlberguesProps> = ({
       {!loading && albergues.length > 0 && totalPages > 1 && (
         <div className="mb-6">
           <PaginationControls
-            onPreviousPage={goToPreviousPage}
-            getPageNumbers={getPageNumbers}
-            onNextPage={goToNextPage}
             currentPage={currentPage}
             totalPages={totalPages}
-            onGoToPage={goToPage}
+            onPageChange={goToPage}
           />
         </div>
       )}
@@ -166,12 +126,9 @@ export const ListaAlbergues: React.FC<ListaAlberguesProps> = ({
       {!loading && albergues.length > 0 && totalPages > 1 && (
         <div className="mt-8">
           <PaginationControls
-            onPreviousPage={goToPreviousPage}
-            getPageNumbers={getPageNumbers}
-            onNextPage={goToNextPage}
             currentPage={currentPage}
             totalPages={totalPages}
-            onGoToPage={goToPage}
+            onPageChange={goToPage}
           />
         </div>
       )}

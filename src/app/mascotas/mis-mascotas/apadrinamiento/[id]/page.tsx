@@ -7,7 +7,7 @@ import { RolesEnum } from "@/types/enums/enums";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 
-export default function AdopcionPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ApadrinamientoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
 
@@ -20,7 +20,7 @@ export default function AdopcionPage({ params }: { params: Promise<{ id: string 
       <ContainerPage>
         <SolicitudAdopcionForm
           animalAlbergueId={parseInt(id)}
-          estadoId={1} // Adopción
+          estadoId={2} // Apadrinamiento
           onSuccess={handleSuccess}
         />
       </ContainerPage>

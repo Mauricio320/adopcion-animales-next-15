@@ -1,10 +1,12 @@
 "use client";
 
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 
 export default function UnauthorizedPage() {
-  const { user, logout } = useAuthContext();
+  const { user } = useAuthContext();
+  const { signOut } = useAuth();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -67,7 +69,7 @@ export default function UnauthorizedPage() {
           </Link>
           
           <button
-            onClick={logout}
+            onClick={signOut}
             className="group cursor-pointer relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-red-600 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
             Cerrar Sesión

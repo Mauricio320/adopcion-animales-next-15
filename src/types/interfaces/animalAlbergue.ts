@@ -11,4 +11,5 @@ export interface IAnimalAlbergue {
   updated_at?: string;
   Estado?: IEstado;
   Albergue?: IAlbergue;
+  activo?: boolean;
 }

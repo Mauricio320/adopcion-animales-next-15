@@ -77,7 +77,7 @@ export const SplitButton: React.FC<SplitButtonProps> = ({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-0.5 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200"
+          className="absolute right-0 mt-0.5 min-w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200"
         >
           <div className="py-1">
             {options.map((option, index) => (
@@ -91,7 +91,9 @@ export const SplitButton: React.FC<SplitButtonProps> = ({
                   option.color || 'text-gray-700'
                 } ${option.hoverColor ? `hover:${option.hoverColor}` : 'hover:bg-gray-50'} transition-colors duration-200`}
               >
-                {option.icon}
+                <div className="w-4 h-4 flex items-center justify-center">
+                  {option.icon}
+                </div>
                 {option.label}
               </button>
             ))}
