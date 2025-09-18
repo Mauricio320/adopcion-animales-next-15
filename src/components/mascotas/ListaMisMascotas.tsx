@@ -1,69 +1,120 @@
 "use client";
 
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { Modal } from "@/components/common/Modal";
+import { PageHeader } from "@/components/common/PageHeader";
 import { PaginationControls } from "@/components/common/PaginationControls";
-import { SplitButton } from "@/components/common/SplitButton";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import { useAnimals } from "@/hooks/useAnimals";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { FaEdit, FaHeart, FaTrash } from "react-icons/fa";
-import { GiDogHouse } from "react-icons/gi";
+import {
+  FaHeart,
+  FaPlus
+} from "react-icons/fa";
+
+import { UpdateAnimalAlbergueEstadoMutation } from "@/hooks/useAnimalAlbergue";
+import { RiFileList3Fill } from "react-icons/ri";
+import { MascotaCard } from "./MascotaCard";
 
 const ITEMS_PER_PAGE = 10;
 
 export const ListaMisMascotas = () => {
   const { user } = useAuthContext();
+  const { push } = useRouter();
+  const { showSuccess, showError } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type: 'delete' | 'disponible';
+    animalAlbergueId: number;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+    type: 'delete',
+    animalAlbergueId: 0,
+  });
 
   const albergueId = user?.usuario?.usuario_albergue?.albergue_id;
 
+  const animalsOptions = useMemo(
+    () => ({
+      albergue_id: albergueId,
+      limit: ITEMS_PER_PAGE,
+      offset: (currentPage - 1) * ITEMS_PER_PAGE,
+      orderBy: "created_at" as const,
+    }),
+    [albergueId, currentPage]
+  );
+
   const {
     data: animals,
+    refetch,
     loading,
     error,
     total,
-  } = useAnimals({
-    albergue_id: albergueId,
-    limit: ITEMS_PER_PAGE,
-    offset: (currentPage - 1) * ITEMS_PER_PAGE,
-    orderBy: "created_at",
-  });
+  } = useAnimals(animalsOptions);
 
   const totalPages = useMemo(() => {
     return Math.ceil(total / ITEMS_PER_PAGE);
   }, [total]);
 
-  const onPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+  const handleDeleteMascota = async () => {
+    const result = await UpdateAnimalAlbergueEstadoMutation({
+      animalAlbergueId: confirmModal.animalAlbergueId,
+      body: { activo: false },
+    });
+
+    if (result.error) {
+      showError("Error al eliminar mascota");
+    } else {
+      showSuccess("Mascota eliminada exitosamente");
+      refetch();
     }
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
   };
 
-  const onNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+  const handleDisponible = async () => {
+    const result = await UpdateAnimalAlbergueEstadoMutation({
+      animalAlbergueId: confirmModal.animalAlbergueId,
+      body: { estado_id: null },
+    });
+
+    if (result.error) {
+      showError("Error al actualizar estado de la mascota");
+    } else {
+      showSuccess("Mascota ahora disponible para adopción/apadrinamiento");
+      refetch();
     }
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
   };
 
-  const onGoToPage = (page: number) => {
-    setCurrentPage(page);
+  const openDeleteModal = (animalAlbergueId: number) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Eliminar Mascota",
+      message: "¿Estás seguro de que quieres eliminar esta mascota? Esta acción no se puede deshacer.",
+      onConfirm: handleDeleteMascota,
+      type: 'delete',
+      animalAlbergueId,
+    });
   };
 
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    return pages;
+  const openDisponibleModal = (animalAlbergueId: number) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Hacer Disponible",
+      message: "¿Estás seguro de que quieres hacer disponible esta mascota para adopción o apadrinamiento?",
+      onConfirm: handleDisponible,
+      type: 'disponible',
+      animalAlbergueId,
+    });
   };
 
   if (loading) {
@@ -79,135 +130,89 @@ export const ListaMisMascotas = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-        <div className="px-8 py-6 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-emerald-800">
-              Mis Mascotas
-            </h2>
-            <p className="text-emerald-600 text-sm font-medium">
-              Total de mascotas:{" "}
-              <span className="font-semibold text-emerald-700">{total}</span>
-            </p>
-          </div>
-        </div>
+    <div>
+      <PageHeader
+        title="Mis mascotas"
+        icon={<RiFileList3Fill className="w-8 h-8 text-emerald-600" />}
+        redirectPath="/dashboard"
+      />
 
-        {animals.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No tienes mascotas registradas</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nombre
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Especie
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sexo
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Edad
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tamaño
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ciudad
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {animals.map((animal) => (
-                    <tr key={animal.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {animal.nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {animal.especies?.nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {animal.sexo_animal?.nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {animal.edad} {animal.tipo_edad_animal?.nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {animal.tamano_animal?.nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {animal.municipios?.nombre}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <SplitButton
-                          mainLabel="Opciones"
-                          options={[
-                            {
-                              label: "Poner en adopción",
-                              icon: <GiDogHouse className="w-4 h-4" />,
-                              action: () =>
-                                console.log("Poner en adopción", animal.id),
-                              color: "text-gray-500",
-                              hoverColor: "bg-green-50",
-                            },
-                            {
-                              label: "Ofrecer apadrinamiento",
-                              icon: <FaHeart className="w-4 h-4" />,
-                              action: () =>
-                                console.log(
-                                  "Ofrecer apadrinamiento",
-                                  animal.id
-                                ),
-                              color: "text-gray-500",
-                              hoverColor: "bg-green-50",
-                            },
-                            {
-                              label: "Editar información",
-                              icon: <FaEdit className="w-4 h-4" />,
-                              action: () =>
-                                console.log("Editar información", animal.id),
-                              color: "text-gray-500",
-                              hoverColor: "bg-green-50",
-                            },
-                            {
-                              label: "Eliminar mascota",
-                              icon: <FaTrash className="w-4 h-4" />,
-                              action: () =>
-                                console.log("Eliminar mascota", animal.id),
-                              color: "text-gray-500",
-                              hoverColor: "bg-green-50",
-                            },
-                          ]}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {totalPages > 1 && (
-              <div className="px-6 py-4 bg-gray-50 border-t">
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPreviousPage={onPreviousPage}
-                  onNextPage={onNextPage}
-                  onGoToPage={onGoToPage}
-                  getPageNumbers={getPageNumbers}
-                />
-              </div>
-            )}
-          </>
-        )}
+      <div className="flex items-center justify-end gap-4">
+        <p className="text-emerald-600 text-sm font-medium">
+          Total de mascotas:{" "}
+          <span className="font-semibold text-emerald-700">{total}</span>
+        </p>
+        <button
+          onClick={() => push("/mascotas/registrar")}
+          className="inline-flex cursor-pointer items-center px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 shadow-md"
+        >
+          <FaPlus className="w-4 h-4 mr-2" />
+          Agregar Mascota
+        </button>
       </div>
+
+      {animals.length === 0 ? (
+        <div className="text-center py-16 px-6">
+          <div className="w-32 h-32 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-emerald-100">
+            <FaHeart className="w-16 h-16 text-emerald-500" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            No tienes mascotas registradas
+          </h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            Comienza registrando tu primera mascota para darle un hogar y
+            encontrarle una familia amorosa.
+          </p>
+          <button
+            onClick={() => push("/mascotas/registrar")}
+            className="inline-flex cursor-pointer items-center px-6 py-3 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200"
+          >
+            <FaPlus className="w-5 h-5 mr-2" />
+            Registrar Primera Mascota
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Lista de tarjetas en filas */}
+          <div className="p-6">
+            <div className="space-y-4">
+              {animals.map((animal) => (
+                <MascotaCard
+                openDisponibleModal={openDisponibleModal}
+                openDeleteModal={openDeleteModal}
+                  key={animal.id}
+                  animal={animal}
+                  push={push}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-slate-50 border-t border-gray-200">
+              <PaginationControls
+                onPageChange={setCurrentPage}
+                currentPage={currentPage}
+                totalPages={totalPages}
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modal de confirmación */}
+      <Modal
+        confirmButtonClass={confirmModal.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
+        confirmText={confirmModal.type === 'delete' ? 'Eliminar' : 'Confirmar'}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        type="confirm"
+      >
+        <p className="text-gray-700">{confirmModal.message}</p>
+      </Modal>
     </div>
   );
 };

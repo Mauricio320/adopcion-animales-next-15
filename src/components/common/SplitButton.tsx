@@ -25,7 +25,6 @@ export const SplitButton: React.FC<SplitButtonProps> = ({
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -51,13 +50,6 @@ export const SplitButton: React.FC<SplitButtonProps> = ({
   };
 
   const handleToggleClick = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.right - 192, // 192px = w-48 (12rem)
-      });
-    }
     setIsOpen(!isOpen);
   };
 
@@ -66,32 +58,26 @@ export const SplitButton: React.FC<SplitButtonProps> = ({
   };
 
   return (
-    <>
-      <div className={`relative inline-block ${className}`} ref={buttonRef}>
-        <div className="flex">
-          <button
-            onClick={handleMainClick}
-            className="cursor-pointer px-4 py-2 bg-emerald-600 text-white rounded-l-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 flex items-center"
-          >
-            {mainLabel}
-          </button>
-          <button
-            onClick={handleToggleClick}
-            className="cursor-pointer px-3 py-2 bg-emerald-600 text-white rounded-r-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 border-l border-emerald-500 flex items-center"
-          >
-            <FaChevronDown size={12} />
-          </button>
-        </div>
+    <div className={`relative inline-block ${className}`} ref={buttonRef}>
+      <div className="flex">
+        <button
+          onClick={handleMainClick}
+          className="cursor-pointer text-white px-4 py-2 bg-orange-300 rounded-l-lg hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 transition-colors duration-200 flex items-center"
+        >
+          {mainLabel}
+        </button>
+        <button
+          onClick={handleToggleClick}
+          className="cursor-pointer px-3 py-2 bg-orange-300 text-white rounded-r-lg hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 transition-colors duration-200 border-l border-white flex items-center"
+        >
+          <FaChevronDown size={12} />
+        </button>
       </div>
 
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="fixed w-fit min-w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200"
-          style={{
-            top: `${dropdownPosition.top + 8}px`,
-            left: `${dropdownPosition.left}px`,
-          }}
+          className="absolute right-0 mt-0.5 min-w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200"
         >
           <div className="py-1">
             {options.map((option, index) => (
@@ -101,19 +87,19 @@ export const SplitButton: React.FC<SplitButtonProps> = ({
                   option.action();
                   handleOptionClick();
                 }}
-                className={`cursor-pointer flex items-center gap-3 w-full text-left px-4 py-2 text-sm ${
+                className={`cursor-pointer flex items-center gap-3 w-full text-left px-4 py-1.5 text-sm ${
                   option.color || 'text-gray-700'
-                } hover:${
-                  option.hoverColor || 'bg-gray-50'
-                } transition-colors duration-200`}
+                } ${option.hoverColor ? `hover:${option.hoverColor}` : 'hover:bg-gray-50'} transition-colors duration-200`}
               >
-                {option.icon}
+                <div className="w-4 h-4 flex items-center justify-center">
+                  {option.icon}
+                </div>
                 {option.label}
               </button>
             ))}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };

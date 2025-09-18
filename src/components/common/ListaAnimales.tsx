@@ -1,10 +1,10 @@
 "use client";
 
 import { useAnimals } from "@/hooks/useAnimals";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { ListaAnimalesCard } from "./ListaAnimalesCard";
-import { PaginationControls } from "./PaginationControls";
 import { Modal } from "./Modal";
+import { PaginationControls } from "./PaginationControls";
 
 interface ListaAnimalesProps {
   className?: string;
@@ -26,23 +26,18 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [filtros, setFiltros] = useState({
-    especie_id: especie_id,
-    municipio_id: municipio_id,
-    sexo_id: sexo_id,
-    es_perdido,
-  });
-
-  const { data: animals, loading } = useAnimals(filtros);
-
-  useEffect(() => {
-    setFiltros({
+  // Memoizar los filtros para evitar recrear el objeto en cada render
+  const filtros = useMemo(
+    () => ({
       especie_id: especie_id,
       municipio_id: municipio_id,
       sexo_id: sexo_id,
       es_perdido,
-    });
-  }, [es_perdido, municipio_id, especie_id, sexo_id]);
+    }),
+    [especie_id, municipio_id, sexo_id, es_perdido]
+  );
+
+  const { data: animals, loading } = useAnimals(filtros);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -54,54 +49,14 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
     window.scrollTo({ top: 450, behavior: "smooth" });
   };
 
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      goToPage(currentPage + 1);
-    }
-  };
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxPagesToShow = 5;
-
-    if (totalPages <= maxPagesToShow) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, 5);
-      } else if (currentPage >= totalPages - 2) {
-        for (let i = totalPages - 4; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-          pages.push(i);
-        }
-      }
-    }
-
-    return pages;
-  };
-
   return (
     <div className={`w-full ${className}`}>
       {!loading && animals.length > 0 && (
         <div className="mb-6">
           <PaginationControls
-            onPreviousPage={goToPreviousPage}
-            getPageNumbers={getPageNumbers}
-            onNextPage={goToNextPage}
             currentPage={currentPage}
             totalPages={totalPages}
-            onGoToPage={goToPage}
+            onPageChange={goToPage}
           />
         </div>
       )}
@@ -186,12 +141,9 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
       {!loading && animals.length > 0 && (
         <div className="mt-8">
           <PaginationControls
-            onPreviousPage={goToPreviousPage}
-            getPageNumbers={getPageNumbers}
-            onNextPage={goToNextPage}
             currentPage={currentPage}
             totalPages={totalPages}
-            onGoToPage={goToPage}
+            onPageChange={goToPage}
           />
         </div>
       )}

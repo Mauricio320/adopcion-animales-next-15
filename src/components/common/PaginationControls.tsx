@@ -5,20 +5,48 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
-  onPreviousPage: () => void;
-  onNextPage: () => void;
-  onGoToPage: (page: number) => void;
-  getPageNumbers: () => number[];
+  onPageChange: (page: number) => void;
 }
 
 export const PaginationControls: React.FC<PaginationControlsProps> = ({
   currentPage,
   totalPages,
-  onPreviousPage,
-  onNextPage,
-  onGoToPage,
-  getPageNumbers,
-}) => (
+  onPageChange,
+}) => {
+  const onPreviousPage = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const onNextPage = () => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
+
+  const onGoToPage = (page: number) => {
+    onPageChange(page);
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
+
+  return (
   <div className="flex flex-col md:flex-row justify-center md:justify-end items-center gap-4 w-full px-2">
     {totalPages > 1 && (
       <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-2 w-full md:w-auto">
@@ -68,4 +96,5 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
       </div>
     )}
   </div>
-);
+  );
+};

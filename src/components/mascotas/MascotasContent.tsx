@@ -2,13 +2,14 @@
 
 import { DashboardCard } from "../common/DashboardCard";
 import { PageHeader } from "../common/PageHeader";
+import { FaCog } from "react-icons/fa";
 
 export const MascotasContent = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <PageHeader
         title="Gestión de Mascotas"
-        icon="🐾"
+        icon={<FaCog className="w-8 h-8 text-emerald-600" />}
         redirectPath="/dashboard"
       />
 

@@ -4,6 +4,27 @@ import { IAnimal, IUseAnimalsOptions } from "@/types/interfaces/animal";
 import { IAnimalAlbergue } from "@/types/interfaces/animalAlbergue";
 import { useCallback, useEffect, useState } from "react";
 
+// Función helper para transformar datos de animal desde Supabase
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const transformAnimalData = (animal: Record<string, any>): IAnimal => {
+  return {
+    ...animal,
+    AnimalAlbergue: animal.animal_albergue?.[0]
+      ? {
+          id: animal.animal_albergue[0].id,
+          animal_id: animal.animal_albergue[0].animal_id,
+          es_perdido: animal.animal_albergue[0].es_perdido,
+          estado_id: animal.animal_albergue[0].estado_id,
+          Estado: animal.animal_albergue[0].estado_animal,
+          albergue_id: animal.animal_albergue[0].albergue_id,
+          Albergue: animal.animal_albergue[0].albergues,
+          created_at: animal.animal_albergue[0].created_at,
+          updated_at: animal.animal_albergue[0].updated_at,
+        }
+      : undefined,
+  };
+};
+
 export const useAnimals = (options: IUseAnimalsOptions = {}) => {
   const [animals, setAnimals] = useState<IAnimal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +52,8 @@ export const useAnimals = (options: IUseAnimalsOptions = {}) => {
         `,
         { count: "exact" }
       );
+
+      query = query.eq("animal_albergue.activo", true);
 
       if (options.es_perdido !== undefined) {
         query = query.eq("animal_albergue.es_perdido", options.es_perdido);
@@ -87,23 +110,7 @@ export const useAnimals = (options: IUseAnimalsOptions = {}) => {
 
       if (supabaseError) throw supabaseError;
 
-      const transformedData: IAnimal[] =
-        data?.map((animal) => ({
-          ...animal,
-          AnimalAlbergue: animal.animal_albergue?.[0]
-            ? {
-                id: animal.animal_albergue[0].id,
-                animal_id: animal.animal_albergue[0].animal_id,
-                es_perdido: animal.animal_albergue[0].es_perdido,
-                estado_id: animal.animal_albergue[0].estado_id,
-                Estado: animal.animal_albergue[0].estado_animal,
-                albergue_id: animal.animal_albergue[0].albergue_id,
-                Albergue: animal.animal_albergue[0].albergues,
-                createdAt: animal.animal_albergue[0].created_at,
-                updatedAt: animal.animal_albergue[0].updated_at,
-              }
-            : undefined,
-        })) || [];
+      const transformedData: IAnimal[] = data?.map(transformAnimalData) || [];
 
       setAnimals(transformedData);
       setTotal(count || 0);
@@ -117,8 +124,7 @@ export const useAnimals = (options: IUseAnimalsOptions = {}) => {
 
   useEffect(() => {
     fetchAnimals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchAnimals]);
 
   return {
     refetch: fetchAnimals,
@@ -159,3 +165,80 @@ export const CreateAnimalMutation = async ({
     return { error };
   }
 };
+
+export const getAnimalById = async (
+  id: number | string,
+  albergueId: number
+): Promise<IAnimal | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("animales")
+      .select(
+        `
+          *,
+          especies (*),
+          sexo_animal (*),
+          tamano_animal (*),
+          municipios (*),
+          tipo_edad_animal (*),
+          animal_albergue!inner (
+            *,
+            estado_animal (*),
+            albergues (*)
+          )
+        `
+      )
+      .eq("id", id)
+      .eq("animal_albergue.albergue_id", albergueId)
+      .eq("animal_albergue.activo", true)
+      .single();
+
+    if (error) throw error;
+
+    const transformedData: IAnimal = transformAnimalData(data);
+
+    return transformedData;
+  } catch (error) {
+    console.error("Error al obtener mascota:", error);
+    return null;
+  }
+};
+
+export const UpdateAnimalMutation = async ({
+  animalId,
+  animalData,
+  animal_albergue,
+}: {
+  animalId: number;
+  animalData: Partial<IAnimal>;
+  animal_albergue?: Partial<IAnimalAlbergue>;
+}) => {
+  try {
+    // Actualizar datos del animal
+    delete animalData["es_perdido"];
+    const { data: animal, error: animalError } = await supabase
+      .from("animales")
+      .update(animalData)
+      .eq("id", animalId)
+      .select()
+      .single();
+
+    if (animalError) throw animalError;
+
+    // Actualizar relación con albergue si se proporciona
+    if (animal_albergue) {
+      const { error: albergueError } = await supabase
+        .from("animal_albergue")
+        .update(animal_albergue)
+        .eq("animal_id", animalId);
+
+      if (albergueError) throw albergueError;
+    }
+
+    return { animal };
+  } catch (error) {
+    console.error("Error al actualizar mascota:", error);
+    return { error };
+  }
+};
+

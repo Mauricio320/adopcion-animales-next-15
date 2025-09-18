@@ -1,248 +1,145 @@
 import { supabase } from "@/lib/supabase/client";
-import { useState } from "react";
 import { IUsuario } from "@/types/interfaces/usuarios";
-import { IAlbergue } from "@/types/interfaces/albergue";;
-import { TiposUsuarioEnum } from "@/types/enums/enums";
+import { IAlbergue } from "@/types/interfaces/albergue";
+import { useCallback, useState } from "react";
 
-
-
-export interface IUsuarioAlbergue {
-  id: number;
-  usuario_id: number;
-  albergue_id: number;
-  es_activo: boolean;
-  es_propietario: boolean;
-  created_at: string;
-  updated_at: string;
+export interface IUseUsuariosOptions {
+  limit?: number;
+  offset?: number;
+  orderBy?: string;
 }
 
-export interface IUsuarioAlbergueData {
-  es_activo: boolean;
-  es_propietario: boolean;
-  albergue: Partial<IAlbergue>;
-}
-
-export interface ICreateUsuarioData {
-  usuario: Partial<IUsuario>;
-  usuarioAlbergue?: IUsuarioAlbergueData;
-}
-
-export interface ICreateUsuarioResponse {
-  usuario: IUsuario;
-  albergue?: IAlbergue;
-  usuarioAlbergue?: IUsuarioAlbergue;
-}
-
-export const useUsuarios = () => {
-  const [loading, setLoading] = useState(false);
+export const useUsuarios = (options: IUseUsuariosOptions = {}) => {
+  const [usuarios, setUsuarios] = useState<IUsuario[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
 
-  const createUsuarioManual = async (
-    data: ICreateUsuarioData
-  ): Promise<ICreateUsuarioResponse | null> => {
+  const fetchUsuarios = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const { usuario, usuarioAlbergue } = data;
+      let query = supabase.from("usuarios").select("*", { count: "exact" });
 
-      const esAlbergue = usuario.tipo_usuario_id
-        ? Number(usuario.tipo_usuario_id) === TiposUsuarioEnum.ALBERGUE
-        : false;
-
-      // ✅ ASIGNACIÓN AUTOMÁTICA DE ROLES
-      const usuarioConRol = {
-        ...usuario,
-        rol: esAlbergue ? "staff" : "usuario", // Albergues = staff, Ciudadanos = usuario
-        estado: "activo", // Por defecto activo
-      };
-
-      if (esAlbergue && usuarioAlbergue) {
-        const { data: resultado, error: errorRPC } = await supabase.rpc(
-          "create_usuario_simple",
-          {
-            usuario_data: usuarioConRol,
-            albergue_data: usuarioAlbergue.albergue,
-          }
-        );
-
-        if (errorRPC) throw errorRPC;
-
-        return {
-          usuario: { id: resultado.usuario_id },
-        } as ICreateUsuarioResponse;
-      } else {
-        const usuarioParaBD = {
-          ...usuarioConRol,
-          contrasena: "",
-        };
-        delete usuarioParaBD.password;
-
-        const { data: usuarioCreado, error: usuarioError } = await supabase
-          .from("usuarios")
-          .insert([usuarioParaBD])
-          .select()
-          .single();
-
-        if (usuarioError) throw usuarioError;
-
-        return { usuario: usuarioCreado };
+      if (options.limit) {
+        query = query.limit(options.limit);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const getUserById = async (id: number): Promise<IUsuario | null> => {
-    try {
-      setLoading(true);
-      setError(null);
+      if (options.offset) {
+        query = query.range(
+          options.offset,
+          options.offset + (options.limit || 10) - 1
+        );
+      }
 
-      const { data, error: supabaseError } = await supabase
-        .from("usuarios")
-        .select(
-          `
-          *,
-          usuarios_albergues (
-            *,
-            albergues (*)
-          )
-        `
-        )
-        .eq("id", id)
-        .single();
+      const orderBy = options.orderBy || "created_at";
+      query = query.order(orderBy, { ascending: false });
+
+      const { data, error: supabaseError, count } = await query;
 
       if (supabaseError) throw supabaseError;
 
-      return data;
+      setUsuarios(data || []);
+      setTotal(count || 0);
     } catch (err) {
+      console.error("Error fetching usuarios:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
-      return null;
     } finally {
       setLoading(false);
     }
-  };
-
-  const generatePassword = (numeroDocumento: string): string => {
-    const documento = numeroDocumento.replace(/\D/g, "");
-    return documento.slice(-6);
-  };
-
-  const createUsuarioWithAuth = async (
-    data: ICreateUsuarioData
-  ): Promise<(ICreateUsuarioResponse & { password?: string }) | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { usuario, usuarioAlbergue } = data;
-
-      if (!usuario.correo) {
-        throw new Error("Correo es requerido para crear cuenta");
-      }
-      if (!usuario.numero_documento) {
-        throw new Error("Número de documento es requerido");
-      }
-
-      const password = generatePassword(usuario.numero_documento!);
-
-      if (password.length < 6) {
-        throw new Error("El número de documento debe tener al menos 6 dígitos");
-      }
-
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: usuario.correo!,
-        password: password,
-        options: {
-          data: {
-            nombre: usuario.nombre,
-            apellidos: usuario.apellidos,
-            numero_documento: usuario.numero_documento,
-          },
-        },
-      });
-
-      if (authError) {
-        throw authError;
-      }
-      if (!authData.user) {
-        throw new Error("No se pudo crear el usuario en Supabase Auth");
-      }
-
-      try {
-        const esAlbergue = usuario.tipo_usuario_id
-          ? Number(usuario.tipo_usuario_id) === TiposUsuarioEnum.ALBERGUE
-          : false;
-
-        const usuarioData = {
-          ...usuario,
-          auth_id: authData.user.id,
-          contrasena: "",
-          rol: esAlbergue ? "staff" : "usuario", // ✅ ASIGNACIÓN AUTOMÁTICA DE ROLES
-          estado: "activo", // Por defecto activo
-        };
-
-        if (esAlbergue && usuarioAlbergue) {
-          const { data: result, error } = await supabase.rpc(
-            "create_usuario_simple",
-            {
-              usuario_data: usuarioData,
-              albergue_data: usuarioAlbergue.albergue,
-            }
-          );
-
-          if (error) throw error;
-          return { ...result, password };
-        } else {
-          const { data: result, error } = await supabase
-            .from("usuarios")
-            .insert([usuarioData])
-            .select()
-            .single();
-
-          if (error) throw error;
-          return { usuario: result, password };
-        }
-      } catch (error) {
-        throw error;
-      }
-    } catch (err) {
-      const error = err as Error;
-      const errorMessage = error.message || "Error desconocido";
-      
-      // Verificar si es error de correo duplicado
-      if (errorMessage.includes('usuarios_correo_key')) {
-        setError('El correo ya está registrado');
-        throw new Error('El correo ya está registrado');
-      }
-      
-      // Verificar si es error de número de documento duplicado
-      if (errorMessage.includes('usuarios_numero_documento_key')) {
-        setError('El número de documento ya está registrado');
-        throw new Error('El número de documento ya está registrado');
-      }
-      
-      // Verificar si es error de límite de tiempo de seguridad
-      if (errorMessage.includes('For security purposes, you can only request this after')) {
-        setError('Por motivos de seguridad, debes esperar antes de realizar otra solicitud. Intenta nuevamente en unos momentos.');
-        throw new Error('Por motivos de seguridad, debes esperar antes de realizar otra solicitud. Intenta nuevamente en unos momentos.');
-      }
-      
-      setError(errorMessage);
-      throw error; // Re-lanzar el error para que sea capturado por el componente
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [options]);
 
   return {
+    refetch: fetchUsuarios,
+    data: usuarios,
     loading,
     error,
-    createUsuarioManual,
+    total,
     createUsuarioWithAuth,
-    getUserById,
   };
+};
+
+// Función para buscar usuario por documento
+export const buscarUsuarioPorDocumento = async (numeroDocumento: string): Promise<IUsuario | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("numero_documento", numeroDocumento.trim())
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+
+    return data || null;
+  } catch (error) {
+    console.error("Error buscando usuario por documento:", error);
+    return null;
+  }
+};
+
+// Función para crear usuario con autenticación
+export const createUsuarioWithAuth = async (data: {
+  usuario: Partial<IUsuario>;
+  usuarioAlbergue?: {
+    es_activo: boolean;
+    es_propietario: boolean;
+    albergue: Partial<IAlbergue>;
+  };
+}) => {
+  try {
+    const { usuario, usuarioAlbergue } = data;
+
+    // Crear usuario en auth.users
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: usuario.correo!,
+      password: usuario.numero_documento!.slice(-6), // Últimos 6 dígitos del documento
+    });
+
+    if (authError) throw authError;
+
+    // Crear usuario en public.usuarios
+    const usuarioData = {
+      ...usuario,
+      auth_id: authData.user?.id,
+      password: usuario.numero_documento!.slice(-6),
+      estado: "activo",
+      rol: "usuario",
+      email_confirmed: false,
+    };
+
+    const { data: usuarioCreado, error: usuarioError } = await supabase
+      .from("usuarios")
+      .insert([usuarioData])
+      .select()
+      .single();
+
+    if (usuarioError) throw usuarioError;
+
+    // Si es albergue, crear albergue y relación
+    if (usuarioAlbergue) {
+      const { data: albergue, error: albergueError } = await supabase
+        .from("albergues")
+        .insert([usuarioAlbergue.albergue])
+        .select()
+        .single();
+
+      if (albergueError) throw albergueError;
+
+      // Crear relación usuario-albergue
+      await supabase.from("usuarios_albergues").insert([
+        {
+          usuario_id: usuarioCreado.id,
+          albergue_id: albergue.id,
+          es_activo: usuarioAlbergue.es_activo,
+          es_propietario: usuarioAlbergue.es_propietario,
+        },
+      ]);
+    }
+
+    return usuarioCreado;
+  } catch (error) {
+    console.error("Error creando usuario con auth:", error);
+    throw error;
+  }
 };

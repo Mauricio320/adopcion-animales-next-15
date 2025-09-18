@@ -1,5 +1,5 @@
 import RouteGuard from "@/components/auth/RouteGuard";
-import { AdopcionesContent } from "@/components/adopciones/AdopcionesContent";
+import { AdopcionesContent } from "@/components/adoptar-apadrinar/AdopcionesContent";
 import { ALL_ROLES } from "@/types/enums/enums";
 import { ContainerPage } from "@/components/common/ContainerPage";
 

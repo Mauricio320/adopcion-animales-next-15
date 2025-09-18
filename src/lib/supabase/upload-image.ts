@@ -1,8 +1,6 @@
 import imageCompression from "browser-image-compression";
 import { supabase } from "./client";
 
-const MASCOTAS_BUCKET = process.env.MASCOTAS_BUCKET ?? "mascotas-imagenes";
-
 interface ImageUploadOptions {
   maxSizeMB?: number;
   maxWidthOrHeight?: number;
@@ -16,6 +14,7 @@ interface ImageUploadOptions {
 export const uploadImageToSupabase = async (
   file: File,
   fileName: string,
+  bucket: string,
   options: ImageUploadOptions = {}
 ) => {
   const defaultOptions = {
@@ -49,7 +48,7 @@ export const uploadImageToSupabase = async (
 
     // 3. Subir a Supabase Storage
     const { error } = await supabase.storage
-      .from(MASCOTAS_BUCKET)
+      .from(bucket)
       .upload(uniqueFileName, compressedFile);
 
     if (error) {
@@ -59,7 +58,7 @@ export const uploadImageToSupabase = async (
     // 4. Obtener URL pública
     const {
       data: { publicUrl },
-    } = supabase.storage.from(MASCOTAS_BUCKET).getPublicUrl(uniqueFileName);
+    } = supabase.storage.from(bucket).getPublicUrl(uniqueFileName);
 
     return {
       success: true,
@@ -77,17 +76,21 @@ export const uploadImageToSupabase = async (
 };
 
 // Función para eliminar imagen de Supabase
-export const deleteImageFromSupabase = async (fileName: string) => {
+export const deleteImageFromSupabase = async (fileName: string, bucket: string) => {
   try {
-    const { error } = await supabase.storage
-      .from(MASCOTAS_BUCKET)
+    console.log(`Intentando eliminar archivo: ${fileName} del bucket: ${bucket}`);
+
+    const { data, error } = await supabase.storage
+      .from(bucket)
       .remove([fileName]);
 
     if (error) {
+      console.error("Error de Supabase Storage:", error);
       throw new Error(`Error al eliminar imagen: ${error.message}`);
     }
 
-    return { success: true };
+    console.log("Resultado de eliminación:", data);
+    return { success: true, data };
   } catch (error) {
     console.error("Error en deleteImageFromSupabase:", error);
     return {
