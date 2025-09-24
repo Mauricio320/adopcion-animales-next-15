@@ -9,10 +9,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { useAnimals } from "@/hooks/useAnimals";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import {
-  FaHeart,
-  FaPlus
-} from "react-icons/fa";
+import { FaHeart, FaPlus } from "react-icons/fa";
 
 import { UpdateAnimalAlbergueEstadoMutation } from "@/hooks/useAnimalAlbergue";
 import { RiFileList3Fill } from "react-icons/ri";
@@ -30,15 +27,15 @@ export const ListaMisMascotas = () => {
     title: string;
     message: string;
     onConfirm: () => void;
-    type: 'delete' | 'disponible';
-    animalAlbergueId: number;
+    type: "delete" | "disponible";
+    animalAlbergueId: number | null;
   }>({
     isOpen: false,
     title: "",
     message: "",
     onConfirm: () => {},
-    type: 'delete',
-    animalAlbergueId: 0,
+    type: "delete",
+    animalAlbergueId: null,
   });
 
   const albergueId = user?.usuario?.usuario_albergue?.albergue_id;
@@ -66,6 +63,8 @@ export const ListaMisMascotas = () => {
   }, [total]);
 
   const handleDeleteMascota = async () => {
+    if (!confirmModal.animalAlbergueId) return;
+
     const result = await UpdateAnimalAlbergueEstadoMutation({
       animalAlbergueId: confirmModal.animalAlbergueId,
       body: { activo: false },
@@ -77,10 +76,12 @@ export const ListaMisMascotas = () => {
       showSuccess("Mascota eliminada exitosamente");
       refetch();
     }
-    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   };
 
   const handleDisponible = async () => {
+    if (!confirmModal.animalAlbergueId) return;
+
     const result = await UpdateAnimalAlbergueEstadoMutation({
       animalAlbergueId: confirmModal.animalAlbergueId,
       body: { estado_id: null },
@@ -92,16 +93,17 @@ export const ListaMisMascotas = () => {
       showSuccess("Mascota ahora disponible para adopción/apadrinamiento");
       refetch();
     }
-    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   };
 
   const openDeleteModal = (animalAlbergueId: number) => {
     setConfirmModal({
       isOpen: true,
       title: "Eliminar Mascota",
-      message: "¿Estás seguro de que quieres eliminar esta mascota? Esta acción no se puede deshacer.",
+      message:
+        "¿Estás seguro de que quieres eliminar esta mascota? Esta acción no se puede deshacer.",
       onConfirm: handleDeleteMascota,
-      type: 'delete',
+      type: "delete",
       animalAlbergueId,
     });
   };
@@ -110,9 +112,10 @@ export const ListaMisMascotas = () => {
     setConfirmModal({
       isOpen: true,
       title: "Hacer Disponible",
-      message: "¿Estás seguro de que quieres hacer disponible esta mascota para adopción o apadrinamiento?",
+      message:
+        "¿Estás seguro de que quieres hacer disponible esta mascota para adopción o apadrinamiento?",
       onConfirm: handleDisponible,
-      type: 'disponible',
+      type: "disponible",
       animalAlbergueId,
     });
   };
@@ -173,13 +176,12 @@ export const ListaMisMascotas = () => {
         </div>
       ) : (
         <>
-          {/* Lista de tarjetas en filas */}
           <div className="p-6">
             <div className="space-y-4">
               {animals.map((animal) => (
                 <MascotaCard
-                openDisponibleModal={openDisponibleModal}
-                openDeleteModal={openDeleteModal}
+                  openDisponibleModal={openDisponibleModal}
+                  openDeleteModal={openDeleteModal}
                   key={animal.id}
                   animal={animal}
                   push={push}
@@ -188,7 +190,6 @@ export const ListaMisMascotas = () => {
             </div>
           </div>
 
-          {/* Paginación */}
           {totalPages > 1 && (
             <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-slate-50 border-t border-gray-200">
               <PaginationControls
@@ -201,12 +202,19 @@ export const ListaMisMascotas = () => {
         </>
       )}
 
-      {/* Modal de confirmación */}
       <Modal
-        confirmButtonClass={confirmModal.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
-        confirmText={confirmModal.type === 'delete' ? 'Eliminar' : 'Confirmar'}
-        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={confirmModal.onConfirm}
+        confirmButtonClass={
+          confirmModal.type === "delete"
+            ? "bg-red-600 hover:bg-red-700"
+            : "bg-blue-600 hover:bg-blue-700"
+        }
+        confirmText={confirmModal.type === "delete" ? "Eliminar" : "Confirmar"}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={
+          confirmModal.type === "delete"
+            ? handleDeleteMascota
+            : handleDisponible
+        }
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
         type="confirm"

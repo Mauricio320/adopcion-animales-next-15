@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { BannerPage } from "../common/banner-page";
+import { BannerPage } from "../common/BannerPage";
 import { TabView } from "@/components/common/TabView";
 import { FiltroBusqueda } from "./FiltroBusqueda";
-import { ListaAnimales } from "../common/ListaAnimales";
+
 import { FaDog, FaHeart } from "react-icons/fa";
+import { ListaAnimales } from "./ListaAnimales";
 
 interface Filtros {
   municipio_id?: number;

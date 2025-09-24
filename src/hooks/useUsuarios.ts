@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase/client";
 import { IUsuario } from "@/types/interfaces/usuarios";
 import { IAlbergue } from "@/types/interfaces/albergue";
 import { useCallback, useState } from "react";
+import { RolesForTipoUsuario } from "@/types/enums/enums";
 
 export interface IUseUsuariosOptions {
   limit?: number;
@@ -56,12 +57,13 @@ export const useUsuarios = (options: IUseUsuariosOptions = {}) => {
     loading,
     error,
     total,
-    createUsuarioWithAuth,
   };
 };
 
 // Función para buscar usuario por documento
-export const buscarUsuarioPorDocumento = async (numeroDocumento: string): Promise<IUsuario | null> => {
+export const buscarUsuarioPorDocumento = async (
+  numeroDocumento: string
+): Promise<IUsuario | null> => {
   try {
     const { data, error } = await supabase
       .from("usuarios")
@@ -104,7 +106,9 @@ export const createUsuarioWithAuth = async (data: {
       auth_id: authData.user?.id,
       password: usuario.numero_documento!.slice(-6),
       estado: "activo",
-      rol: "usuario",
+      rol: RolesForTipoUsuario[
+        usuario.tipo_usuario_id as keyof typeof RolesForTipoUsuario
+      ],
       email_confirmed: false,
     };
 

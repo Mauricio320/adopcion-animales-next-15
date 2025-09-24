@@ -159,7 +159,7 @@ export const CreateAnimalMutation = async ({
       },
     ]);
 
-    return { animal };
+    return { animal: {} };
   } catch (error) {
     console.error("Error al crear mascota:", error);
     return { error };
@@ -241,4 +241,3 @@ export const UpdateAnimalMutation = async ({
     return { error };
   }
 };
-

@@ -1,13 +1,18 @@
 import { supabase } from "@/lib/supabase/client";
 import { ISolicitudesImagenes } from "@/types/interfaces/solicitudes_imagenes";
-import { uploadImageToSupabase, deleteImageFromSupabase } from "@/lib/supabase/upload-image";
+import {
+  uploadImageToSupabase,
+  deleteImageFromSupabase,
+} from "@/lib/supabase/upload-image";
 import { useCallback, useEffect, useState } from "react";
 
 export interface IUseImagenesSolicitudesOptions {
   solicitud_id?: number;
 }
 
-export const useImagenesSolicitudes = (options: IUseImagenesSolicitudesOptions = {}) => {
+export const useImagenesSolicitudes = (
+  options: IUseImagenesSolicitudesOptions = {}
+) => {
   const [imagenes, setImagenes] = useState<ISolicitudesImagenes[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,84 +45,107 @@ export const useImagenesSolicitudes = (options: IUseImagenesSolicitudesOptions =
     fetchImagenes();
   }, [fetchImagenes]);
 
-  const uploadImagen = useCallback(async (file: File, bucket: string) => {
-    if (!options.solicitud_id) return { error: "Solicitud ID requerido" };
+  const uploadImagen = useCallback(
+    async (file: File, bucket: string) => {
+      if (!options.solicitud_id) return { error: "Solicitud ID requerido" };
 
-    try {
-      const fileName = `solicitud-${options.solicitud_id}`;
-      const uploadResult = await uploadImageToSupabase(file, fileName, bucket);
+      try {
+        const fileName = `solicitud-${options.solicitud_id}`;
+        const uploadResult = await uploadImageToSupabase(
+          file,
+          fileName,
+          bucket
+        );
 
-      if (!uploadResult.success) {
-        return { error: uploadResult.error };
+        if (!uploadResult.success) {
+          return { error: uploadResult.error };
+        }
+
+        const { data, error } = await supabase
+          .from("solicitudes_imagenes")
+          .insert([
+            {
+              solicitud_id: options.solicitud_id,
+              path_imagen: uploadResult.fileName,
+            },
+          ])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setImagenes((prev) => [data, ...prev]);
+        return { data };
+      } catch (err) {
+        console.error("Error uploading imagen solicitud:", err);
+        return {
+          error: err instanceof Error ? err.message : "Error desconocido",
+        };
       }
+    },
+    [options.solicitud_id]
+  );
 
-      const { data, error } = await supabase
-        .from("solicitudes_imagenes")
-        .insert([{
-          solicitud_id: options.solicitud_id,
-          path_imagen: uploadResult.fileName,
-        }])
-        .select()
-        .single();
+  const deleteImagen = useCallback(
+    async (id: number, pathImagen: string, bucket: string) => {
+      try {
+        // Eliminar de Supabase Storage
+        const deleteResult = await deleteImageFromSupabase(pathImagen, bucket);
+        if (!deleteResult.success) {
+          return { error: deleteResult.error };
+        }
 
-      if (error) throw error;
+        // Eliminar de DB
+        const { error } = await supabase
+          .from("solicitudes_imagenes")
+          .delete()
+          .eq("id", id);
 
-      setImagenes(prev => [data, ...prev]);
-      return { data };
-    } catch (err) {
-      console.error("Error uploading imagen solicitud:", err);
-      return { error: err instanceof Error ? err.message : "Error desconocido" };
-    }
-  }, [options.solicitud_id]);
+        if (error) throw error;
 
-  const deleteImagen = useCallback(async (id: number, pathImagen: string, bucket: string) => {
-    try {
-      // Eliminar de Supabase Storage
-      const deleteResult = await deleteImageFromSupabase(pathImagen, bucket);
-      if (!deleteResult.success) {
-        return { error: deleteResult.error };
+        setImagenes((prev) => prev.filter((img) => img.id !== id));
+        return { success: true };
+      } catch (err) {
+        console.error("Error deleting imagen solicitud:", err);
+        return {
+          error: err instanceof Error ? err.message : "Error desconocido",
+        };
       }
+    },
+    []
+  );
 
-      // Eliminar de DB
-      const { error } = await supabase
-        .from("solicitudes_imagenes")
-        .delete()
-        .eq("id", id);
+  const createImagen = useCallback(
+    async (solicitudId: number, pathImagen: string) => {
+      try {
+        const { data, error } = await supabase
+          .from("solicitudes_imagenes")
+          .insert([
+            {
+              solicitud_id: solicitudId,
+              path_imagen: pathImagen,
+            },
+          ])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setImagenes(prev => prev.filter(img => img.id !== id));
-      return { success: true };
-    } catch (err) {
-      console.error("Error deleting imagen solicitud:", err);
-      return { error: err instanceof Error ? err.message : "Error desconocido" };
-    }
-  }, []);
+        // Si estamos en la solicitud correcta, actualizar el estado local
+        if (options.solicitud_id === solicitudId) {
+          setImagenes((prev) => [data, ...prev]);
+        }
 
-  const createImagen = useCallback(async (solicitudId: number, pathImagen: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("solicitudes_imagenes")
-        .insert([{
-          solicitud_id: solicitudId,
-          path_imagen: pathImagen,
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Si estamos en la solicitud correcta, actualizar el estado local
-      if (options.solicitud_id === solicitudId) {
-        setImagenes(prev => [data, ...prev]);
+        return { data };
+      } catch (err) {
+        console.error("Error creating imagen solicitud:", err);
+        return {
+          error: err instanceof Error ? err.message : "Error desconocido",
+        };
       }
-
-      return { data };
-    } catch (err) {
-      console.error("Error creating imagen solicitud:", err);
-      return { error: err instanceof Error ? err.message : "Error desconocido" };
-    }
-  }, [options.solicitud_id]);
+    },
+    [options.solicitud_id]
+  );
 
   return {
     refetch: fetchImagenes,
@@ -140,13 +168,9 @@ export const DeleteSolicitudImagen = async ({
   bucket: string;
 }) => {
   try {
-    // Eliminar de Supabase Storage
     const deleteResult = await deleteImageFromSupabase(pathImagen, bucket);
-    if (!deleteResult.success) {
-      return { error: deleteResult.error };
-    }
+    if (!deleteResult.success) return { error: deleteResult.error };
 
-    // Eliminar de DB
     const { error } = await supabase
       .from("solicitudes_imagenes")
       .delete()
@@ -158,5 +182,29 @@ export const DeleteSolicitudImagen = async ({
   } catch (err) {
     console.error("Error deleting imagen solicitud:", err);
     return { error: err instanceof Error ? err.message : "Error desconocido" };
+  }
+};
+
+export const CreateSolicitudImagen = async (
+  solicitudId: number,
+  pathImagen: string
+) => {
+  try {
+    const { data, error } = await supabase
+      .from("solicitudes_imagenes")
+      .insert([
+        {
+          solicitud_id: solicitudId,
+          path_imagen: pathImagen,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { data };
+  } catch (error) {
+    console.error("Error creating solicitud imagen:", error);
+    return { error };
   }
 };

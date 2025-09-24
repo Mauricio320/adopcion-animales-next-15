@@ -180,7 +180,7 @@ export const Dashboard = () => {
                   Administra el registro y estado de mascotas
                 </p>
                 <button
-                  onClick={() => routes.push("/mascotas")}
+                  onClick={() => routes.push("/mascotas/mis-mascotas")}
                   className="w-full cursor-pointer bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700"
                 >
                   Gestionar Mascotas

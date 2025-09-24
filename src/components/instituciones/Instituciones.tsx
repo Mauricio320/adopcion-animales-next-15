@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { BannerPage } from "../common/banner-page";
-import { ListaAlbergues } from "../common/ListaAlbergues";
+import { BannerPage } from "../common/BannerPage";
+import { ListaAlbergues } from "../adoptar-apadrinar/ListaAlbergues";
 import { useMunicipios } from "@/hooks/useMunicipios";
+import { TabView } from "../common/TabView";
+import { FaHome, FaStethoscope } from "react-icons/fa";
+import { TiposUsuarioEnum } from "@/types/enums/enums";
 
 export const Instituciones = () => {
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState<number>();
@@ -15,6 +18,35 @@ export const Instituciones = () => {
     const value = event.target.value;
     setMunicipioSeleccionado(value ? Number(value) : undefined);
   };
+
+  const tabs = [
+    {
+      id: "albergue",
+      label: "Albergues",
+      icon: <FaHome />,
+      content: (
+        <ListaAlbergues
+          municipio_id={municipioSeleccionado}
+          tipo={TiposUsuarioEnum.ALBERGUE}
+          municipios={municipios}
+          className="mt-4"
+        />
+      ),
+    },
+    {
+      id: "apadrinar",
+      label: "veterinarias",
+      icon: <FaStethoscope />,
+      content: (
+        <ListaAlbergues
+          municipio_id={municipioSeleccionado}
+          tipo={TiposUsuarioEnum.VETERINARIA}
+          municipios={municipios}
+          className="mt-4"
+        />
+      ),
+    },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-4">
@@ -54,11 +86,7 @@ export const Instituciones = () => {
         </div>
       </div>
 
-      <ListaAlbergues
-        municipio_id={municipioSeleccionado}
-        municipios={municipios}
-        className="mt-4"
-      />
+      <TabView tabs={tabs} defaultActiveTab="albergue" className="mt-2" />
     </div>
   );
 };

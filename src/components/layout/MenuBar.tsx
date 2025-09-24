@@ -55,7 +55,7 @@ const MenuBar = () => {
         </div>
       </div>
 
-      <ul className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 items-center px-4 place-items-center">
+      <ul className="grid space-y-1 grid-cols-2 sm:grid-cols-2 md:grid-cols-5 items-center px-4 place-items-center">
         <li>
           <Link href="/">
             <button
@@ -79,6 +79,18 @@ const MenuBar = () => {
             </button>
           </Link>
         </li>
+        <li>
+          <Link href="/red-animalia">
+            <button
+              className={`cursor-pointer  px-4 py-2 **:transition-all duration-400 ease-in-out hover:bg-emerald-700 hover:text-white ${
+                pathname === "/red-animalia" &&
+                "border-b-2 border-b-emerald-700"
+              }`}
+            >
+              Red Animalia
+            </button>
+          </Link>
+        </li>
         {!user ? (
           // Opciones para usuarios no logueados
           <>
@@ -97,9 +109,30 @@ const MenuBar = () => {
             <li>
               <Link href="/login">
                 <button
-                  className={`cursor-pointer px-4 py-2 bg-emerald-700 transition-all duration-400 ease-in-out shadow-md `}
+                  className={`group relative cursor-pointer px-5 py-2.5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-600 hover:from-emerald-400 hover:via-emerald-500 hover:to-emerald-600 transition-all duration-500 ease-in-out shadow-lg hover:shadow-xl border border-emerald-500/30 hover:border-emerald-400/50 rounded-xl overflow-hidden`}
                 >
-                  <span className="text-white">Iniciar sesión</span>
+                  {/* Efecto de brillo */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
+
+                  {/* Contenido del botón */}
+                  <div className="relative flex items-center justify-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-white/90 group-hover:text-white transition-colors duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    <span className="text-white font-semibold text-sm tracking-wide">
+                      Iniciar sesión
+                    </span>
+                  </div>
                 </button>
               </Link>
             </li>
@@ -122,34 +155,40 @@ const MenuBar = () => {
             <li className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="cursor-pointer px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 hover:from-gray-150 hover:to-gray-250 transition-all duration-300 ease-in-out shadow-lg text-gray-700 rounded-full flex items-center gap-3 border-2 border-slate-100"
+                className="group relative cursor-pointer px-4 py-2.5 bg-gradient-to-r from-emerald-50 via-emerald-100 to-emerald-50 hover:from-emerald-100 hover:via-emerald-200 hover:to-emerald-100 transition-all duration-500 ease-in-out shadow-lg hover:shadow-xl text-emerald-700 rounded-xl flex items-center gap-3 border border-emerald-200/50 hover:border-emerald-300/70 overflow-hidden"
               >
-                {/* Avatar circular */}
-                <div className="w-8 h-8 font-bold bg-white rounded-full flex items-center justify-center text-gray-600 text-sm shadow-sm">
-                  {(
-                    user.usuario?.nombre?.[0] ||
-                    user.email?.[0] ||
-                    "U"
-                  ).toUpperCase()}
+                {/* Efecto de brillo sutil */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-200/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
+
+                {/* Contenido del botón */}
+                <div className="relative flex items-center gap-3">
+                  {/* Avatar circular mejorado */}
+                  <div className="w-8 h-8 font-bold bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white text-sm shadow-md">
+                    {(
+                      user.usuario?.nombre?.[0] ||
+                      user.email?.[0] ||
+                      "U"
+                    ).toUpperCase()}
+                  </div>
+                  <span className="font-semibold text-emerald-700 group-hover:text-emerald-800 transition-colors duration-300">
+                    {user.usuario?.nombre || user.email?.split("@")[0]}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 transition-all duration-300 text-emerald-600 group-hover:text-emerald-700 ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </div>
-                <span className="font-semibold text-gray-600">
-                  {user.usuario?.nombre || user.email?.split("@")[0]}
-                </span>
-                <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    isDropdownOpen ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
               </button>
 
               {isDropdownOpen && (

@@ -72,7 +72,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string>("");
 
-  // Hooks para obtener datos
   const { data: municipios, loading: loadingMunicipios } = useMunicipios();
   const { data: especies, loading: loadingEspecies } = useEspecies();
   const { data: sexoAnimal, loading: loadingSexo } = useSexoAnimal();
@@ -80,6 +79,7 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
   const { data: tipoEdadAnimal, loading: loadingTipoEdad } =
     useTipoEdadAnimal();
 
+  const isEditMode = !!animal;
   const isLoading =
     loadingMunicipios ||
     loadingEspecies ||
@@ -87,7 +87,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
     loadingTamano ||
     loadingTipoEdad;
 
-  // Efecto para cargar datos del animal si existe (modo edición)
   useEffect(() => {
     if (animal) {
       setFormData({
@@ -156,34 +155,10 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
 
       let imageUrl = formData.imagen_url;
 
-      // Manejar imagen
       if (imgFile) {
         if (originalImageUrl) {
-          try {
-            const fileName = originalImageUrl.split("/").pop();
-            if (fileName) {
-              const deleteResult = await deleteImageFromSupabase(
-                fileName,
-                "mascotas-imagenes"
-              );
-
-              if (!deleteResult.success) {
-                console.warn(
-                  "No se pudo eliminar la imagen anterior, pero continuando con la subida..."
-                );
-              }
-            } else {
-              console.error(
-                "No se pudo extraer el nombre del archivo de la URL:",
-                originalImageUrl
-              );
-            }
-          } catch (deleteError) {
-            console.warn(
-              "Error al eliminar imagen anterior, pero continuando con la subida:",
-              deleteError
-            );
-          }
+          const fileName = originalImageUrl.split("/").pop() as string;
+          await deleteImageFromSupabase(fileName, "mascotas-imagenes");
         }
 
         const uploadResult = await uploadImageToSupabase(
@@ -232,11 +207,7 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
 
       hideBlockUI();
     } catch (error) {
-      console.error(
-        `Error al ${animal ? "actualizar" : "registrar"} mascota:`,
-        error
-      );
-      alert(`Error al ${animal ? "actualizar" : "registrar"} la mascota`);
+      alert(error);
       hideBlockUI();
     } finally {
       setIsSubmitting(false);
@@ -245,8 +216,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
   };
 
   if (isLoading) return <LoadingSpinner text="Cargando formulario..." />;
-
-  const isEditMode = !!animal;
 
   return (
     <div>
@@ -263,9 +232,7 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
       />
 
       <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
-        {/* Información básica */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Imagen - ocupa 3 filas */}
           <div className="md:row-span-3">
             <label
               htmlFor="imagen"
@@ -278,8 +245,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
               currentImage={formData.imagen_url}
             />
           </div>
-
-          {/* Input 1 - Nombre */}
           <div>
             <label
               htmlFor="nombre"
@@ -298,8 +263,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
               placeholder="Ingresa el nombre"
             />
           </div>
-
-          {/* Input 2 - Especie */}
           <div>
             <label
               htmlFor="especie_id"
@@ -323,8 +286,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
               ))}
             </select>
           </div>
-
-          {/* Input 3 - Municipio */}
           <div>
             <label
               htmlFor="municipio_id"
@@ -349,8 +310,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
             </select>
           </div>
         </div>
-
-        {/* Resto de campos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label
@@ -466,7 +425,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
           </div>
         </div>
 
-        {/* Campos booleanos */}
         <div className="border-t border-gray-200 pt-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Estado de salud
@@ -525,7 +483,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
           </div>
         </div>
 
-        {/* Estado del animal */}
         <div className="border-t border-gray-200 pt-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Estado del animal
@@ -555,7 +512,6 @@ export const MascotaForm: React.FC<MascotaFormProps> = ({
           </div>
         </div>
 
-        {/* Botón de envío */}
         <div className="flex justify-center pt-6">
           <button
             type="submit"

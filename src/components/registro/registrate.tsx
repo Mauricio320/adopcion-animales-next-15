@@ -1,19 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { IUsuario } from "@/types/interfaces/usuarios";
-import { IAlbergue } from "@/types/interfaces/albergue";;
-import { RegistrateStep1 } from "./registrateStep1";
-import { RegistrateStep2 } from "./registrateStep2";
-import { requiereDigitoVerificacion, TiposUsuarioEnum } from "@/types/enums/enums";
-import { useUsuarios } from "@/hooks/useUsuarios";
 import { useBlockUI } from "@/contexts/BlockUIContext";
 import { useToast } from "@/contexts/ToastContext";
+import { createUsuarioWithAuth } from "@/hooks/useUsuarios";
+import {
+  requiereDigitoVerificacion,
+  TiposUsuarioEnum,
+} from "@/types/enums/enums";
+import { IAlbergue } from "@/types/interfaces/albergue";
+import { IUsuario } from "@/types/interfaces/usuarios";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { RegistrateStep1 } from "./registrateStep1";
+import { RegistrateStep2 } from "./registrateStep2";
 
 export const Registrate = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { createUsuarioWithAuth } = useUsuarios();
+
   const { showBlockUI, hideBlockUI } = useBlockUI();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
@@ -40,6 +43,7 @@ export const Registrate = () => {
     celular: "",
     municipio_id: 0,
     descripcion: "",
+    email: ""
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -114,22 +118,24 @@ export const Registrate = () => {
   ): string => {
     switch (field) {
       case "nombre":
-        return !value || value === "" ? "Nombre del albergue es requerido" : "";
+        return !value || value === ""
+          ? "Nombre del establecimiento es requerido"
+          : "";
       case "direccion":
         return !value || value === ""
-          ? "Dirección del albergue es requerida"
+          ? "Dirección del establecimiento es requerida"
           : "";
       case "celular":
         return !value || value === ""
-          ? "Celular del albergue es requerido"
+          ? "Celular del establecimiento es requerido"
           : "";
       case "municipio_id":
         return !value || value === 0
-          ? "Municipio del albergue es requerido"
+          ? "Municipio del establecimiento es requerido"
           : "";
       case "descripcion":
         return !value || value === ""
-          ? "Descripción del albergue es requerida"
+          ? "Descripción del establecimiento es requerida"
           : "";
       case "telefono":
         // Teléfono fijo es opcional, no validamos
@@ -157,9 +163,14 @@ export const Registrate = () => {
     showBlockUI("Registrando usuario...");
 
     try {
-      const esAlbergue = formData.tipo_usuario_id
-        ? Number(formData.tipo_usuario_id) === TiposUsuarioEnum.ALBERGUE
-        : false;
+      const includeAlbergue = [
+        TiposUsuarioEnum.ALBERGUE,
+        TiposUsuarioEnum.VETERINARIA,
+      ];
+
+      const esAlbergue = includeAlbergue.includes(
+        Number(formData.tipo_usuario_id)
+      );
 
       const data = {
         usuario: formData,
@@ -167,7 +178,7 @@ export const Registrate = () => {
           usuarioAlbergue: {
             es_activo: true,
             es_propietario: true,
-            albergue: albergueData,
+            albergue: { ...albergueData, tipo: Number(formData.tipo_usuario_id) },
           },
         }),
       };
