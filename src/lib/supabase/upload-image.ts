@@ -42,11 +42,9 @@ export const uploadImageToSupabase = async (
       `compressedFile size ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`
     );
 
-    // 2. Generar nombre único para el archivo
     const fileExt = compressedFile.name.split(".").pop();
     const uniqueFileName = `${fileName}-${Date.now()}.${fileExt}`;
 
-    // 3. Subir a Supabase Storage
     const { error } = await supabase.storage
       .from(bucket)
       .upload(uniqueFileName, compressedFile);
@@ -55,7 +53,6 @@ export const uploadImageToSupabase = async (
       throw new Error(`Error al subir imagen: ${error.message}`);
     }
 
-    // 4. Obtener URL pública
     const {
       data: { publicUrl },
     } = supabase.storage.from(bucket).getPublicUrl(uniqueFileName);

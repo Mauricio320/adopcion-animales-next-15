@@ -1,14 +1,16 @@
 import RouteGuard from "@/components/auth/RouteGuard";
+import { CambioContrasena } from "@/components/cambio-contrasena/CambioContrasena";
 import { ContainerPage } from "@/components/common/ContainerPage";
-import { MascotasContent } from "@/components/mascotas/MascotasContent";
 import { ALL_ROLES } from "@/types/enums/enums";
 
-export default function MascotasPage() {
+const page = () => {
   return (
     <RouteGuard allowedRoles={ALL_ROLES}>
       <ContainerPage>
-        <MascotasContent />
+        <CambioContrasena />
       </ContainerPage>
     </RouteGuard>
   );
-}
+};
+
+export default page;

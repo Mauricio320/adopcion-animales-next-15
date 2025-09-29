@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { IUsuario } from "@/types/interfaces/usuarios";
 import { AuthLoader } from "@/components/common/Loader";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { getUsuarioWithActiveAlbergue } from "@/hooks/useUsuarios";
 
 export interface LoginCredentials {
   email: string;
@@ -40,22 +41,10 @@ export const DataLogin = ({
       } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: usuarioData } = await supabase
-          .from("usuarios")
-          .select(
-            `
-            *,
-            usuario_albergue:usuarios_albergues (
-              *,
-              albergues (*, municipio:municipios(*))
-            )
-          `
-          )
-          .eq("auth_id", user.id)
-          .eq("usuarios_albergues.es_activo", true)
-          .single();
+        const usuarioData = await getUsuarioWithActiveAlbergue(user.id);
+        if (!usuarioData) return;
 
-        usuarioData["usuario_albergue"] = usuarioData?.usuario_albergue[0];
+        usuarioData["usuario_albergue"] = usuarioData?.usuario_albergue;
         const userWithData = { ...user, usuario: usuarioData };
 
         setUser(userWithData);

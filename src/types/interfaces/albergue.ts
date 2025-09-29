@@ -6,9 +6,12 @@ export interface IAlbergue {
   direccion: string;
   telefono: string;
   celular: string;
+  email?: string;
   municipio_id: number;
   descripcion: string;
   created_at: string;
   updated_at: string;
-  municipio?: IMunicipio
+  municipio?: IMunicipio;
+  animales_activos?: number;
+  tipo?: number; // 1 = Albergue, 2 = Veterinaria
 }

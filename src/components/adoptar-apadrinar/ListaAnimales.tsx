@@ -3,8 +3,12 @@
 import { useAnimals } from "@/hooks/useAnimals";
 import { useMemo, useState } from "react";
 import { ListaAnimalesCard } from "./ListaAnimalesCard";
-import { Modal } from "./Modal";
-import { PaginationControls } from "./PaginationControls";
+import { Modal } from "../common/Modal";
+import { PaginationControls } from "../common/PaginationControls";
+import { AdopcionModalContent } from "./AdopcionModalContent";
+import { AnimalPerdidoModalContent } from "./AnimalPerdidoModalContent";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { IAnimal } from "@/types/interfaces/animal";
 
 interface ListaAnimalesProps {
   className?: string;
@@ -23,10 +27,13 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
   especie_id,
   sexo_id,
 }) => {
+  const { user } = useAuthContext();
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAnimal, setSelectedAnimal] = useState<IAnimal | null>(null);
+  const [modalType, setModalType] = useState<"adoptar" | "apadrinar" | "visto">("adoptar");
 
-  // Memoizar los filtros para evitar recrear el objeto en cada render
+  // Memorizar los filtros para evitar recrear el objeto en cada render
   const filtros = useMemo(
     () => ({
       especie_id: especie_id,
@@ -49,6 +56,17 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
     window.scrollTo({ top: 450, behavior: "smooth" });
   };
 
+  const handleOpenModal = (animal: IAnimal, type: "adoptar" | "apadrinar" | "visto") => {
+    setSelectedAnimal(animal);
+    setModalType(type);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAnimal(null);
+  };
+
   return (
     <div className={`w-full ${className}`}>
       {!loading && animals.length > 0 && (
@@ -60,53 +78,6 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
           />
         </div>
       )}
-
-      {/* Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Información sobre mascotas"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            {es_perdido
-              ? "Este es el sistema para reportar y buscar mascotas perdidas. Aquí puedes:"
-              : "Este es el sistema de adopción de mascotas. Aquí puedes:"}
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-600">
-            {es_perdido ? (
-              <>
-                <li>Reportar una mascota perdida</li>
-                <li>Buscar mascotas reportadas como perdidas</li>
-                <li>Contactar con los dueños de mascotas encontradas</li>
-                <li>Filtrar por ubicación, especie y características</li>
-              </>
-            ) : (
-              <>
-                <li>Explorar mascotas disponibles para adopción</li>
-                <li>Filtrar por especie, ubicación y características</li>
-                <li>Contactar directamente con los albergues</li>
-                <li>Conocer más sobre el proceso de adopción</li>
-              </>
-            )}
-          </ul>
-          <div className="bg-emerald-50 p-4 rounded-lg">
-            <p className="text-emerald-800 font-medium">💡 Consejo</p>
-            <p className="text-emerald-700 text-sm mt-1">
-              Si no encuentras lo que buscas, intenta modificar los filtros de
-              búsqueda o contacta directamente con los albergues de tu zona.
-            </p>
-          </div>
-        </div>
-      </Modal>
-
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-      >
-        Más información
-      </button>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
@@ -133,7 +104,11 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {currentAnimals.map((animal) => (
-            <ListaAnimalesCard key={animal.id} animal={animal} />
+            <ListaAnimalesCard
+              key={animal.id}
+              animal={animal}
+              onOpenModal={handleOpenModal}
+            />
           ))}
         </div>
       )}
@@ -147,6 +122,30 @@ export const ListaAnimales: React.FC<ListaAnimalesProps> = ({
           />
         </div>
       )}
+
+      {/* Modal único para toda la lista */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={
+          modalType === "adoptar"
+            ? "Solicitud de Adopción"
+            : modalType === "apadrinar"
+            ? "Solicitud de Apadrinamiento"
+            : "Información de Mascota Perdida"
+        }
+        size="lg"
+      >
+        {modalType === "visto" ? (
+          <AnimalPerdidoModalContent selectedAnimal={selectedAnimal} />
+        ) : (
+          <AdopcionModalContent
+            selectedAnimal={selectedAnimal}
+            modalType={modalType as "adoptar" | "apadrinar"}
+            user={user}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

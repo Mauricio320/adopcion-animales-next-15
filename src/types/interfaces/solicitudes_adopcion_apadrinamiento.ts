@@ -1,7 +1,8 @@
 import { IAnimalAlbergue } from "./animalAlbergue";
 import { IEstado } from "./estado";
 import { ISeguimientosImagenes } from "./seguimientos_imagenes";
-import { IUsuario } from "./usuarios";
+import { ISolicitudesSeguimiento } from "./solicitudesSeguimiento";
+import { IUsuarioWithRelations } from "./usuarios";
 
 
 export interface ISolicitudesAdopcionApadrinamiento {
@@ -17,7 +18,8 @@ export interface ISolicitudesAdopcionApadrinamiento {
   updated_at?: string;
   Estado?: IEstado;
   AnimalAlbergue?: IAnimalAlbergue;
-  UsuarioAdoptante?: IUsuario;
-  UsuarioEntrega?: IUsuario;
+  UsuarioAdoptante?: IUsuarioWithRelations;
+  UsuarioEntrega?: IUsuarioWithRelations;
   SolicitudesImagenes?: ISeguimientosImagenes[];
+  SolicitudesSeguimientos?: ISolicitudesSeguimiento[];
 }

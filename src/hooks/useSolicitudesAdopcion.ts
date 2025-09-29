@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { ISolicitudesAdopcionApadrinamiento } from "@/types/interfaces/solicitudes_adopcion_apadrinamiento";
+import { CloneDataHelper } from "@/utils/helpers/clone-data";
 import { useCallback, useEffect, useState } from "react";
 
 export interface IUseSolicitudesOptions {
@@ -11,8 +12,12 @@ export interface IUseSolicitudesOptions {
   orderBy?: string;
 }
 
-export const useSolicitudesAdopcion = (options: IUseSolicitudesOptions = {}) => {
-  const [solicitudes, setSolicitudes] = useState<ISolicitudesAdopcionApadrinamiento[]>([]);
+export const useSolicitudesAdopcion = (
+  options: IUseSolicitudesOptions = {}
+) => {
+  const [solicitudes, setSolicitudes] = useState<
+    ISolicitudesAdopcionApadrinamiento[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
@@ -27,9 +32,17 @@ export const useSolicitudesAdopcion = (options: IUseSolicitudesOptions = {}) => 
           *,
           Estado:estado_animal(*),
           AnimalAlbergue:animal_albergue(*, Estado:estado_animal(*), Albergue:albergues(*)),
-          UsuarioAdoptante:usuarios!fk_solicitudes_usuario_adoptante(*),
+          UsuarioAdoptante:usuarios!fk_solicitudes_usuario_adoptante(
+            *, tipo_documento: tipos_documento(*),
+            municipio: municipios(*)
+           ),
           UsuarioEntrega:usuarios!fk_solicitudes_usuario_entrega(*),
-          SolicitudesImagenes:solicitudes_imagenes(*)
+          SolicitudesImagenes:solicitudes_imagenes(*),
+          SolicitudesSeguimientos:seguimientos_adopcion(
+          *, 
+          SeguimientosImagenes:seguimientos_imagenes(*), 
+          UsuarioSeguimiento:usuarios(*)
+          )
         `,
         { count: "exact" }
       );
@@ -78,7 +91,22 @@ export const useSolicitudesAdopcion = (options: IUseSolicitudesOptions = {}) => 
     fetchSolicitudes();
   }, [fetchSolicitudes]);
 
+  const sortSolicitudesBySeguimientos = useCallback(
+    (solicitudesToSort: ISolicitudesAdopcionApadrinamiento[]) => {
+      return solicitudesToSort.map((solicitud) => ({
+        ...solicitud,
+        SolicitudesSeguimientos: (solicitud.SolicitudesSeguimientos || []).sort(
+          (a, b) => {
+            return (b.id || 0) - (a.id || 0);
+          }
+        ),
+      }));
+    },
+    []
+  );
+
   return {
+    sortedData: sortSolicitudesBySeguimientos(solicitudes),
     refetch: fetchSolicitudes,
     data: solicitudes,
     loading,
@@ -91,12 +119,18 @@ export const useSolicitudesAdopcion = (options: IUseSolicitudesOptions = {}) => 
 export const CreateSolicitudMutation = async ({
   solicitudData,
 }: {
-  solicitudData: Omit<ISolicitudesAdopcionApadrinamiento, 'id' | 'created_at' | 'updated_at'>;
+  solicitudData: Omit<
+    ISolicitudesAdopcionApadrinamiento,
+    "id" | "created_at" | "updated_at"
+  >;
 }) => {
   try {
+    const clone = CloneDataHelper(solicitudData);
+    delete clone.SolicitudesSeguimientos;
+
     const { data, error } = await supabase
       .from("solicitudes_adopcion_apadrinamiento")
-      .insert([solicitudData])
+      .insert([clone])
       .select()
       .single();
 
@@ -117,10 +151,13 @@ export const UpdateSolicitudMutation = async ({
   solicitudId: number;
   solicitudData: Partial<ISolicitudesAdopcionApadrinamiento>;
 }) => {
+  const clone = CloneDataHelper(solicitudData);
+  delete clone.SolicitudesSeguimientos;
+
   try {
     const { data, error } = await supabase
       .from("solicitudes_adopcion_apadrinamiento")
-      .update(solicitudData)
+      .update(clone)
       .eq("id", solicitudId)
       .select()
       .single();
@@ -134,23 +171,53 @@ export const UpdateSolicitudMutation = async ({
   }
 };
 
-// Función separada para eliminar solicitud
-export const DeleteSolicitudMutation = async ({
-  solicitudId,
-}: {
-  solicitudId: number;
-}) => {
-  try {
-    const { error } = await supabase
-      .from("solicitudes_adopcion_apadrinamiento")
-      .delete()
-      .eq("id", solicitudId);
+export const useSolicitudAdopcion = (id: string | number | undefined) => {
+  const [solicitud, setSolicitud] =
+    useState<ISolicitudesAdopcionApadrinamiento | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    if (error) throw error;
+  const fetchSolicitud = useCallback(async () => {
+    if (!id) return;
 
-    return { success: true };
-  } catch (error) {
-    console.error("Error al eliminar solicitud:", error);
-    return { error };
-  }
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: supabaseError } = await supabase
+        .from("solicitudes_adopcion_apadrinamiento")
+        .select(
+          `
+            *,
+            Estado:estado_animal(*),
+            AnimalAlbergue:animal_albergue(*, Estado:estado_animal(*), Albergue:albergues(*)),
+            UsuarioAdoptante:usuarios!fk_solicitudes_usuario_adoptante(*),
+            UsuarioEntrega:usuarios!fk_solicitudes_usuario_entrega(*),
+            SolicitudesImagenes:solicitudes_imagenes(*)
+          `
+        )
+        .eq("id", id)
+        .single();
+
+      if (supabaseError) throw supabaseError;
+
+      setSolicitud(data);
+    } catch (err) {
+      console.error("Error fetching solicitud:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchSolicitud();
+  }, [fetchSolicitud]);
+
+  return {
+    refetch: fetchSolicitud,
+    data: solicitud,
+    loading,
+    error,
+  };
 };

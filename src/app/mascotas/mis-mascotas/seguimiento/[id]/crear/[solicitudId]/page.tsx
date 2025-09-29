@@ -22,13 +22,10 @@ export default function CrearSeguimientoPage({
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
       <ContainerPage>
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold">Crear Nuevo Seguimiento</h1>
-          <SeguimientoAdopcionForm
-            solicitudId={parseInt(solicitudId)}
-            onSuccess={handleSuccess}
-          />
-        </div>
+        <SeguimientoAdopcionForm
+          solicitudId={parseInt(solicitudId)}
+          onSuccess={handleSuccess}
+        />
       </ContainerPage>
     </RouteGuard>
   );

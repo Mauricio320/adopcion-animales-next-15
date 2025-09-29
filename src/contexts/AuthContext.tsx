@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthUser } from "@/components/data-login/dataLogin";
+import { AuthUser } from "@/components/data-login/DataLogin";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 interface AuthContextType {

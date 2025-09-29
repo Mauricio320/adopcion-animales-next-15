@@ -6,11 +6,14 @@ import { IAnimal } from "@/types/interfaces/animal";
 
 interface ListaAnimalesCardProps {
   animal: IAnimal;
+  onOpenModal: (animal: IAnimal, type: "adoptar" | "apadrinar" | "visto") => void;
 }
 
 export const ListaAnimalesCard: React.FC<ListaAnimalesCardProps> = ({
   animal,
+  onOpenModal,
 }) => {
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 border border-gray-100">
       <div className="relative h-40 bg-gradient-to-br from-emerald-50 to-blue-50 overflow-hidden">
@@ -117,8 +120,11 @@ export const ListaAnimalesCard: React.FC<ListaAnimalesCardProps> = ({
         </div>
 
         <div className="flex gap-2">
-          {animal.AnimalAlbergue?.es_perdido && (
-            <button className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-200 text-gray-700 py-2 px-3 rounded-lg text-xs font-semibold hover:from-gray-200 hover:to-gray-300 hover:scale-105 transition-all duration-300 transform shadow-md shadow-gray-200">
+          {animal.AnimalAlbergue?.es_perdido && !animal.AnimalAlbergue?.estado_id  && (
+            <button
+              onClick={() => onOpenModal(animal, "visto")}
+              className="flex-1 cursor-pointer bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-200 text-gray-700 py-2 px-3 rounded-lg text-xs font-semibold hover:from-gray-200 hover:to-gray-300 hover:scale-105 transition-all duration-300 transform shadow-md shadow-gray-200"
+            >
               <div className="flex items-center justify-center gap-1">
                 <span className="text-sm">🔍</span>
                 <span>¿Lo has visto?</span>
@@ -133,13 +139,19 @@ export const ListaAnimalesCard: React.FC<ListaAnimalesCardProps> = ({
             }
             className="flex gap-2 flex-1"
           >
-            <button className="cursor-pointer flex-1 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-200 text-gray-700 py-2 px-3 rounded-lg text-xs font-semibold hover:from-gray-200 hover:to-gray-300 hover:scale-105 transition-all duration-300 transform shadow-md shadow-gray-200">
+            <button
+              onClick={() => onOpenModal(animal, "apadrinar")}
+              className="cursor-pointer flex-1 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-200 text-gray-700 py-2 px-3 rounded-lg text-xs font-semibold hover:from-gray-200 hover:to-gray-300 hover:scale-105 transition-all duration-300 transform shadow-md shadow-gray-200"
+            >
               <div className="flex items-center justify-center gap-1">
                 <span className="text-sm">❤️</span>
                 <span>Apadrinar</span>
               </div>
             </button>
-            <button className="cursor-pointer  flex-1 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-200 text-gray-700 py-2 px-3 rounded-lg text-xs font-semibold hover:from-gray-200 hover:to-gray-300 hover:scale-105 transition-all duration-300 transform shadow-md shadow-gray-200">
+            <button
+              onClick={() => onOpenModal(animal, "adoptar")}
+              className="cursor-pointer  flex-1 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-200 text-gray-700 py-2 px-3 rounded-lg text-xs font-semibold hover:from-gray-200 hover:to-gray-300 hover:scale-105 transition-all duration-300 transform shadow-md shadow-gray-200"
+            >
               <div className="flex items-center justify-center gap-1">
                 <span className="text-sm">🏠</span>
                 <span>Adoptar</span>

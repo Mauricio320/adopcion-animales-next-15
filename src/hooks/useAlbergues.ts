@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 interface IUseAlberguesOptions {
   municipio_id?: number;
+  tipo?: number;
   limit?: number;
   offset?: number;
   orderBy?: string;
@@ -22,6 +23,7 @@ export const useAlbergues = (options: IUseAlberguesOptions = {}) => {
       setLoading(true);
       setError(null);
 
+      // Query para albergues
       let query = supabase.from("albergues").select(
         `
           *,
@@ -33,6 +35,10 @@ export const useAlbergues = (options: IUseAlberguesOptions = {}) => {
       // Filtros opcionales
       if (options.municipio_id) {
         query = query.eq("municipio_id", options.municipio_id);
+      }
+
+      if (options.tipo) {
+        query = query.eq("tipo", options.tipo);
       }
 
       if (options.limit) {
@@ -54,11 +60,30 @@ export const useAlbergues = (options: IUseAlberguesOptions = {}) => {
           : { ascending: false };
       query = query.order(orderBy, orderDirection);
 
-      const { data, error: supabaseError, count } = await query;
+      const { data: alberguesData, error: alberguesError, count } = await query;
+      if (alberguesError) throw alberguesError;
 
-      if (supabaseError) throw supabaseError;
+      // Query para counts de animales activos
+      const { data: countsData, error: countsError } = await supabase
+        .from("animal_albergue")
+        .select("albergue_id")
+        .eq("activo", true);
 
-      setAlbergues(data || []);
+      if (countsError) throw countsError;
+
+      // Contar por albergue_id
+      const countsMap = (countsData || []).reduce((acc, item) => {
+        acc[item.albergue_id] = (acc[item.albergue_id] || 0) + 1;
+        return acc;
+      }, {} as Record<number, number>);
+
+      // Agregar counts a los albergues
+      const alberguesWithCounts = (alberguesData || []).map((albergue) => ({
+        ...albergue,
+        animales_activos: countsMap[albergue.id] || 0,
+      }));
+
+      setAlbergues(alberguesWithCounts);
       setTotal(count || 0);
     } catch (err) {
       console.error("Error fetching albergues:", err);

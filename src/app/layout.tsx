@@ -1,6 +1,6 @@
 import { LayoutDefault } from "@/components/layout/LayoutDefault";
 import "./globals.css";
-import { DataLogin } from "@/components/data-login/dataLogin";
+import { DataLogin } from "@/components/data-login/DataLogin";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BlockUIProvider } from "@/contexts/BlockUIContext";
 import { BlockUI } from "@/components/common/BlockUI";
