@@ -32,7 +32,6 @@ export const SeguimientoContent = ({
 
   const { sortedData: solicitudes, loading: loadingSolicitudes } =
     useSolicitudesAdopcion(solicitudesAdopcionOptions);
-  console.log({ solicitudes });
 
   const { showSuccess, showError } = useToast();
   const router = useRouter();
@@ -117,7 +116,10 @@ export const SeguimientoContent = ({
         </div>
       ) : (
         solicitudes.map((solicitud) => (
-          <div key={solicitud.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div
+            key={solicitud.id}
+            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+          >
             {/* Header de la solicitud */}
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 border-b border-gray-200">
               <div className="flex justify-between items-center">
@@ -126,7 +128,10 @@ export const SeguimientoContent = ({
                     Solicitud de {solicitud.Estado?.nombre}
                   </h2>
                   <p className="text-xs text-gray-600 mt-1">
-                    ID: {solicitud.id} • Creada: {new Date(solicitud.created_at || '').toLocaleDateString('es-ES')}
+                    ID: {solicitud.id} • Creada:{" "}
+                    {new Date(solicitud.created_at || "").toLocaleDateString(
+                      "es-ES"
+                    )}
                   </p>
                 </div>
                 <div className="flex gap-1">
@@ -164,41 +169,63 @@ export const SeguimientoContent = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                     <div className="flex justify-between">
                       <span className="font-medium text-gray-700">Nombre:</span>
-                      <span className="text-gray-900">{solicitud.UsuarioAdoptante.nombre}</span>
+                      <span className="text-gray-900">
+                        {solicitud.UsuarioAdoptante.nombre}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Apellidos:</span>
-                      <span className="text-gray-900">{solicitud.UsuarioAdoptante.apellidos}</span>
+                      <span className="font-medium text-gray-700">
+                        Apellidos:
+                      </span>
+                      <span className="text-gray-900">
+                        {solicitud.UsuarioAdoptante.apellidos}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium text-gray-700">Correo:</span>
-                      <span className="text-gray-900 break-words">{solicitud.UsuarioAdoptante.correo}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Celular:</span>
-                      <span className="text-gray-900">{solicitud.UsuarioAdoptante.celular}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Municipio:</span>
-                      <span className="text-gray-900">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {(solicitud.UsuarioAdoptante as any).municipio?.nombre || 'N/A'}
+                      <span className="text-gray-900 break-words">
+                        {solicitud.UsuarioAdoptante.correo}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Documento:</span>
-                      <span className="text-gray-900">{solicitud.UsuarioAdoptante.numero_documento}</span>
+                      <span className="font-medium text-gray-700">
+                        Celular:
+                      </span>
+                      <span className="text-gray-900">
+                        {solicitud.UsuarioAdoptante.celular}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Tipo Doc:</span>
+                      <span className="font-medium text-gray-700">
+                        Municipio:
+                      </span>
                       <span className="text-gray-900">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {(solicitud.UsuarioAdoptante as any).tipo_documento?.nombre}
+                        {solicitud.UsuarioAdoptante.municipio?.nombre || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-gray-700">
+                        Documento:
+                      </span>
+                      <span className="text-gray-900">
+                        {solicitud.UsuarioAdoptante.numero_documento}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-gray-700">
+                        Tipo Doc:
+                      </span>
+                      <span className="text-gray-900">
+                        {solicitud.UsuarioAdoptante.tipo_documento?.nombre}
                       </span>
                     </div>
                     <div className="flex justify-between md:col-span-2">
-                      <span className="font-medium text-gray-700">Dirección:</span>
-                      <span className="text-gray-900 break-words">{solicitud.UsuarioAdoptante.direccion}</span>
+                      <span className="font-medium text-gray-700">
+                        Dirección:
+                      </span>
+                      <span className="text-gray-900 break-words">
+                        {solicitud.UsuarioAdoptante.direccion}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -206,18 +233,27 @@ export const SeguimientoContent = ({
 
               {/* Observaciones */}
               <div className="bg-emerald-50 rounded p-3">
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Observaciones</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">{solicitud.observaciones}</p>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                  Observaciones
+                </h3>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {solicitud.observaciones}
+                </p>
               </div>
 
               {/* Imágenes de la solicitud */}
               {solicitud.SolicitudesImagenes &&
                 solicitud.SolicitudesImagenes.length > 0 && (
                   <div className="bg-gray-50 rounded p-3">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Imágenes de la Solicitud</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                      Imágenes de la Solicitud
+                    </h3>
                     <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-2">
                       {solicitud.SolicitudesImagenes.map((img) => (
-                        <div key={img.id} className="aspect-square relative rounded overflow-hidden border border-white shadow-md">
+                        <div
+                          key={img.id}
+                          className="aspect-square relative rounded overflow-hidden border border-white shadow-md"
+                        >
                           <Image
                             src={`${img.path_imagen}`}
                             alt="Imagen solicitud"
@@ -235,7 +271,9 @@ export const SeguimientoContent = ({
               {/* Seguimientos */}
               <div className="border-t border-gray-200 pt-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Seguimientos Realizados</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Seguimientos Realizados
+                  </h3>
                   <button
                     onClick={() => handleAddSeguimiento(solicitud.id!)}
                     className="cursor-pointer bg-emerald-600 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-700 transition-colors shadow-sm font-medium"

@@ -21,5 +21,5 @@ export interface ISolicitudesAdopcionApadrinamiento {
   UsuarioAdoptante?: IUsuarioWithRelations;
   UsuarioEntrega?: IUsuarioWithRelations;
   SolicitudesImagenes?: ISeguimientosImagenes[];
-  SolicitudesSeguimientos: ISolicitudesSeguimiento[];
+  SolicitudesSeguimientos?: ISolicitudesSeguimiento[];
 }

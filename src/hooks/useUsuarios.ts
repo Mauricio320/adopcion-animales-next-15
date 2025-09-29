@@ -1,8 +1,8 @@
 import { supabase } from "@/lib/supabase/client";
-import { IUsuario } from "@/types/interfaces/usuarios";
+import { RolesForTipoUsuario, TiposUsuarioEnum } from "@/types/enums/enums";
 import { IAlbergue } from "@/types/interfaces/albergue";
+import { IUsuario } from "@/types/interfaces/usuarios";
 import { useCallback, useState } from "react";
-import { RolesForTipoUsuario } from "@/types/enums/enums";
 
 export interface IUseUsuariosOptions {
   limit?: number;
@@ -145,5 +145,149 @@ export const createUsuarioWithAuth = async (data: {
   } catch (error) {
     console.error("Error creando usuario con auth:", error);
     throw error;
+  }
+};
+
+// Función para actualizar usuario
+export const updateUsuario = async (data: {
+  usuarioId: number;
+  usuario: Partial<IUsuario>;
+  albergue?: Partial<IAlbergue>;
+}) => {
+  try {
+    const { usuarioId, usuario, albergue } = data;
+    // Actualizar usuario en public.usuarios
+    const { data: usuarioActualizado, error: usuarioError } = await supabase
+      .from("usuarios")
+      .update({
+        ...usuario,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", usuarioId)
+      .select()
+      .single();
+
+    if (usuarioError) throw usuarioError;
+
+    const staffRoles = [
+      TiposUsuarioEnum.ALBERGUE,
+      TiposUsuarioEnum.VETERINARIA,
+    ];
+
+    if (albergue && staffRoles.includes(Number(usuario.tipo_usuario_id))) {
+      delete albergue.municipio;
+      const { error: albergueError } = await supabase
+        .from("albergues")
+        .update({
+          ...albergue,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", albergue.id);
+
+      if (albergueError) throw albergueError;
+    }
+
+    return usuarioActualizado;
+  } catch (error) {
+    console.log(error);
+
+    console.error("Error actualizando usuario:", error);
+    throw error;
+  }
+};
+// Función para obtener usuario con albergue activo (versión asíncrona)
+export const getUsuarioWithActiveAlbergue = async (
+  authId: string
+): Promise<IUsuario | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select(
+        `
+        *,
+        usuario_albergue:usuarios_albergues (
+          *,
+          albergues (*, municipio:municipios(*))
+        )
+      `
+      )
+      .eq("auth_id", authId)
+      .eq("usuarios_albergues.es_activo", true)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+
+    if (data) {
+      data["usuario_albergue"] = data?.usuario_albergue[0];
+    }
+
+    return data || null;
+  } catch (error) {
+    console.error("Error obteniendo usuario con albergue activo:", error);
+    return null;
+  }
+};
+
+// Función para buscar usuario por documento con información adicional de solicitudes
+export const buscarUsuarioPorDocumentoConSolicitudes = async (
+  numeroDocumento: string
+): Promise<IUsuario | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select(
+        `
+        *,
+        municipio:municipios (*),
+        solicitudes_adopcion_apadrinamiento_usuario_adoptante:solicitudes_adopcion_apadrinamiento!usuario_adoptante_id (
+          *,
+          activo,
+          Estado:estado_id (*),
+          AnimalAlbergue:animal_albergue_id (
+            *,
+            Estado:estado_id (*),
+            Albergue:albergue_id (
+              *,
+              municipio:municipios (*)
+            ),
+            Animal:animales!animal_id (
+              nombre,
+              imagen_url,
+              edad,
+              especies (
+                nombre
+              ),
+              sexo_animal (
+                nombre
+              ),
+              tipo_edad_animal (
+                nombre
+              ),
+              municipios (
+                nombre
+              )
+            )
+          ),
+          UsuarioEntrega:usuario_entrega_id (*)
+        )
+      `
+      )
+      .eq("numero_documento", numeroDocumento.trim())
+      .order("id", {
+        ascending: false,
+        referencedTable:
+          "solicitudes_adopcion_apadrinamiento_usuario_adoptante",
+      })
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+
+    return data || null;
+  } catch (error) {
+    console.error(
+      "Error buscando usuario por documento con solicitudes:",
+      error
+    );
+    return null;
   }
 };

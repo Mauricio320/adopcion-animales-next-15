@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { ISolicitudesAdopcionApadrinamiento } from "@/types/interfaces/solicitudes_adopcion_apadrinamiento";
+import { CloneDataHelper } from "@/utils/helpers/clone-data";
 import { useCallback, useEffect, useState } from "react";
 
 export interface IUseSolicitudesOptions {
@@ -124,9 +125,12 @@ export const CreateSolicitudMutation = async ({
   >;
 }) => {
   try {
+    const clone = CloneDataHelper(solicitudData);
+    delete clone.SolicitudesSeguimientos;
+
     const { data, error } = await supabase
       .from("solicitudes_adopcion_apadrinamiento")
-      .insert([solicitudData])
+      .insert([clone])
       .select()
       .single();
 
@@ -147,10 +151,13 @@ export const UpdateSolicitudMutation = async ({
   solicitudId: number;
   solicitudData: Partial<ISolicitudesAdopcionApadrinamiento>;
 }) => {
+  const clone = CloneDataHelper(solicitudData);
+  delete clone.SolicitudesSeguimientos;
+
   try {
     const { data, error } = await supabase
       .from("solicitudes_adopcion_apadrinamiento")
-      .update(solicitudData)
+      .update(clone)
       .eq("id", solicitudId)
       .select()
       .single();

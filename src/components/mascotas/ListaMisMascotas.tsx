@@ -14,6 +14,7 @@ import { FaHeart, FaPlus } from "react-icons/fa";
 import { UpdateAnimalAlbergueEstadoMutation } from "@/hooks/useAnimalAlbergue";
 import { RiFileList3Fill } from "react-icons/ri";
 import { MascotaCard } from "./MascotaCard";
+import { BuscarUsuarioButton } from "../solicitud-mascotas/BuscarUsuarioButton";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -135,23 +136,26 @@ export const ListaMisMascotas = () => {
   return (
     <div>
       <PageHeader
-        title="Mis mascotas"
+        title="Gestión de Mascotas"
         icon={<RiFileList3Fill className="w-8 h-8 text-emerald-600" />}
         redirectPath="/dashboard"
       />
 
-      <div className="flex items-center justify-end gap-4">
-        <p className="text-emerald-600 text-sm font-medium">
-          Total de mascotas:{" "}
-          <span className="font-semibold text-emerald-700">{total}</span>
-        </p>
-        <button
-          onClick={() => push("/mascotas/registrar")}
-          className="inline-flex cursor-pointer items-center px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 shadow-md"
-        >
-          <FaPlus className="w-4 h-4 mr-2" />
-          Agregar Mascota
-        </button>
+      <div className="flex items-center justify-between gap-4">
+        <BuscarUsuarioButton />
+        <div className="flex items-center justify-end gap-4">
+          <p className="text-emerald-600 text-sm font-medium">
+            Total de mascotas:{" "}
+            <span className="font-semibold text-emerald-700">{total}</span>
+          </p>
+          <button
+            onClick={() => push("/mascotas/registrar")}
+            className="inline-flex cursor-pointer items-center px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 shadow-md"
+          >
+            <FaPlus className="w-4 h-4 mr-2" />
+            Agregar Mascota
+          </button>
+        </div>
       </div>
 
       {animals.length === 0 ? (
