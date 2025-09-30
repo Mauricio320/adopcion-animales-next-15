@@ -6,7 +6,7 @@ import { BlockUIProvider } from "@/contexts/BlockUIContext";
 import { BlockUI } from "@/components/common/BlockUI";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/common/Toast";
-import { DataLogin } from "@/components/data-login/DataLogin";
+import { DataLogin } from "@/components/data-login/dataLogin";
 
 export default function RootLayout({
   children,
