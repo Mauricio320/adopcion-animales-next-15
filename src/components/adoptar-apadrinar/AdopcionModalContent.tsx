@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { AuthUser } from "@/components/data-login/dd";
+
 import { useBlockUI } from "@/contexts/BlockUIContext";
+import { AuthUser } from "@/hooks/useAuth";
 import {
   CreateNotificacionInteresadosMutation,
   useGetOneNotificacionesInteresados,

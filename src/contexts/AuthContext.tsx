@@ -1,6 +1,7 @@
 "use client";
 
-import { AuthUser } from "@/components/data-login/dd";
+
+import { AuthUser } from "@/hooks/useAuth";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 interface AuthContextType {
