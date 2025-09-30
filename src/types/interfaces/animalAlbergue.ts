@@ -1,4 +1,5 @@
 import { IAlbergue } from "./albergue";
+import { IAnimal } from "./animal";
 import { IEstado } from "./estado";
 
 export interface IAnimalAlbergue {
@@ -12,4 +13,5 @@ export interface IAnimalAlbergue {
   Estado?: IEstado;
   Albergue?: IAlbergue;
   activo?: boolean;
+  Animal?: IAnimal;
 }

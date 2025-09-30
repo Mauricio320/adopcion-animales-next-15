@@ -1,6 +1,6 @@
 "use client";
 
-import { IAlbergue } from "@/types/interfaces/albergue";;
+import { IAlbergue } from "@/types/interfaces/albergue";
 
 import { IUsuario } from "@/types/interfaces/usuarios";
 import { InformacionAlbergue } from "./InformacionAlbergue";
@@ -26,29 +26,30 @@ interface IProps {
 }
 
 export const RegistrateStep2 = ({
-  formData,
-  updateFormData,
-  errors,
-  validateField,
-  updateError,
-  albergueData,
-  updateAlbergueData,
-  albergueErrors,
   validateAlbergueField,
   updateAlbergueError,
+  updateAlbergueData,
+  updateFormData,
+  albergueErrors,
   setCurrentStep,
+  validateField,
+  albergueData,
+  updateError,
+  formData,
+  errors,
   onSubmit,
 }: IProps) => {
-  // Verificar si el tipo de documento seleccionado requiere DV
   const tipoDocumentoSeleccionado = formData.tipo_documento_id
     ? Number(formData.tipo_documento_id)
     : null;
   const necesitaDV = tipoDocumentoSeleccionado === TiposDocumentoEnum.NIT;
 
-  // Verificar si el tipo de usuario es albergue
-  const esAlbergue = formData.tipo_usuario_id
-    ? Number(formData.tipo_usuario_id) === TiposUsuarioEnum.ALBERGUE
-    : false;
+  const includeAlbergue = [
+    TiposUsuarioEnum.ALBERGUE,
+    TiposUsuarioEnum.VETERINARIA,
+  ];
+
+  const esAlbergue = includeAlbergue.includes(Number(formData.tipo_usuario_id));
 
   const isStep2Valid =
     formData.tipo_documento_id &&
@@ -81,7 +82,9 @@ export const RegistrateStep2 = ({
         albergueData.municipio_id &&
         albergueData.municipio_id !== 0 &&
         albergueData.descripcion &&
-        albergueData.descripcion.trim() !== ""));
+        albergueData.descripcion.trim() !== "" &&
+        albergueData.email &&
+        albergueData.email.trim() !== ""));
 
   const handleAnterior = () => {
     setCurrentStep(1);
@@ -89,7 +92,7 @@ export const RegistrateStep2 = ({
 
   const handleSiguiente = () => {
     if (isStep2Valid) {
-     onSubmit?.();
+      onSubmit?.();
     }
   };
 
@@ -131,11 +134,12 @@ export const RegistrateStep2 = ({
         {/* Información del Albergue - Solo mostrar si es tipo albergue */}
         {esAlbergue && (
           <InformacionAlbergue
-            albergueData={albergueData}
-            updateAlbergueData={updateAlbergueData}
-            albergueErrors={albergueErrors}
             validateAlbergueField={validateAlbergueField}
+            updateAlbergueData={updateAlbergueData}
             updateAlbergueError={updateAlbergueError}
+            albergueErrors={albergueErrors}
+            albergueData={albergueData}
+            formUsuario={formData}
           />
         )}
 

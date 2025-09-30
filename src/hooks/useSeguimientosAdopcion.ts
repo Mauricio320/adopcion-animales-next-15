@@ -126,6 +126,78 @@ export const UpdateSeguimientoMutation = async ({
   }
 };
 
+// Hook para obtener un seguimiento específico por ID
+export const useSeguimientoAdopcion = (seguimientoId: string | number | undefined) => {
+  const [seguimiento, setSeguimiento] = useState<ISeguimientosAdopcion | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSeguimiento = useCallback(async () => {
+    if (!seguimientoId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: supabaseError } = await supabase
+        .from("seguimientos_adopcion")
+        .select(
+          `
+            *,
+            UsuarioSeguimiento:usuarios!fk_seguimientos_usuario(*),
+            SeguimientosImagenes:seguimientos_imagenes(*)
+          `
+        )
+        .eq("id", seguimientoId)
+        .single();
+
+      if (supabaseError) throw supabaseError;
+
+      setSeguimiento(data);
+    } catch (err) {
+      console.error("Error fetching seguimiento:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  }, [seguimientoId]);
+
+  useEffect(() => {
+    fetchSeguimiento();
+  }, [fetchSeguimiento]);
+
+  return {
+    refetch: fetchSeguimiento,
+    data: seguimiento,
+    loading,
+    error,
+  };
+};
+
+// Función para obtener seguimientos por solicitud_id
+export const fetchSeguimientosBySolicitudId = async (solicitudId: number) => {
+  try {
+    const { data, error } = await supabase
+      .from("seguimientos_adopcion")
+      .select(
+        `
+        *,
+        UsuarioSeguimiento:usuarios!fk_seguimientos_usuario(*),
+        SeguimientosImagenes:seguimientos_imagenes(*)
+      `
+      )
+      .eq("solicitud_id", solicitudId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return { data: data || [] };
+  } catch (error) {
+    console.error("Error fetching seguimientos by solicitud_id:", error);
+    return { error };
+  }
+};
+
 // Función separada para eliminar seguimiento
 export const DeleteSeguimientoMutation = async ({
   seguimientoId,

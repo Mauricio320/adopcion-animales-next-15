@@ -9,14 +9,12 @@ import { useToast } from "@/contexts/ToastContext";
 import { useAnimals } from "@/hooks/useAnimals";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import {
-  FaHeart,
-  FaPlus
-} from "react-icons/fa";
+import { FaHeart, FaPlus } from "react-icons/fa";
 
 import { UpdateAnimalAlbergueEstadoMutation } from "@/hooks/useAnimalAlbergue";
 import { RiFileList3Fill } from "react-icons/ri";
 import { MascotaCard } from "./MascotaCard";
+import { BuscarUsuarioButton } from "../solicitud-mascotas/BuscarUsuarioButton";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -30,15 +28,15 @@ export const ListaMisMascotas = () => {
     title: string;
     message: string;
     onConfirm: () => void;
-    type: 'delete' | 'disponible';
-    animalAlbergueId: number;
+    type: "delete" | "disponible";
+    animalAlbergueId: number | null;
   }>({
     isOpen: false,
     title: "",
     message: "",
     onConfirm: () => {},
-    type: 'delete',
-    animalAlbergueId: 0,
+    type: "delete",
+    animalAlbergueId: null,
   });
 
   const albergueId = user?.usuario?.usuario_albergue?.albergue_id;
@@ -66,6 +64,8 @@ export const ListaMisMascotas = () => {
   }, [total]);
 
   const handleDeleteMascota = async () => {
+    if (!confirmModal.animalAlbergueId) return;
+
     const result = await UpdateAnimalAlbergueEstadoMutation({
       animalAlbergueId: confirmModal.animalAlbergueId,
       body: { activo: false },
@@ -77,10 +77,12 @@ export const ListaMisMascotas = () => {
       showSuccess("Mascota eliminada exitosamente");
       refetch();
     }
-    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   };
 
   const handleDisponible = async () => {
+    if (!confirmModal.animalAlbergueId) return;
+
     const result = await UpdateAnimalAlbergueEstadoMutation({
       animalAlbergueId: confirmModal.animalAlbergueId,
       body: { estado_id: null },
@@ -92,16 +94,17 @@ export const ListaMisMascotas = () => {
       showSuccess("Mascota ahora disponible para adopción/apadrinamiento");
       refetch();
     }
-    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   };
 
   const openDeleteModal = (animalAlbergueId: number) => {
     setConfirmModal({
       isOpen: true,
       title: "Eliminar Mascota",
-      message: "¿Estás seguro de que quieres eliminar esta mascota? Esta acción no se puede deshacer.",
+      message:
+        "¿Estás seguro de que quieres eliminar esta mascota? Esta acción no se puede deshacer.",
       onConfirm: handleDeleteMascota,
-      type: 'delete',
+      type: "delete",
       animalAlbergueId,
     });
   };
@@ -110,9 +113,10 @@ export const ListaMisMascotas = () => {
     setConfirmModal({
       isOpen: true,
       title: "Hacer Disponible",
-      message: "¿Estás seguro de que quieres hacer disponible esta mascota para adopción o apadrinamiento?",
+      message:
+        "¿Estás seguro de que quieres hacer disponible esta mascota para adopción o apadrinamiento?",
       onConfirm: handleDisponible,
-      type: 'disponible',
+      type: "disponible",
       animalAlbergueId,
     });
   };
@@ -132,23 +136,26 @@ export const ListaMisMascotas = () => {
   return (
     <div>
       <PageHeader
-        title="Mis mascotas"
+        title="Gestión de Mascotas"
         icon={<RiFileList3Fill className="w-8 h-8 text-emerald-600" />}
         redirectPath="/dashboard"
       />
 
-      <div className="flex items-center justify-end gap-4">
-        <p className="text-emerald-600 text-sm font-medium">
-          Total de mascotas:{" "}
-          <span className="font-semibold text-emerald-700">{total}</span>
-        </p>
-        <button
-          onClick={() => push("/mascotas/registrar")}
-          className="inline-flex cursor-pointer items-center px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 shadow-md"
-        >
-          <FaPlus className="w-4 h-4 mr-2" />
-          Agregar Mascota
-        </button>
+      <div className="flex items-center justify-between gap-4">
+        <BuscarUsuarioButton />
+        <div className="flex items-center justify-end gap-4">
+          <p className="text-emerald-600 text-sm font-medium">
+            Total de mascotas:{" "}
+            <span className="font-semibold text-emerald-700">{total}</span>
+          </p>
+          <button
+            onClick={() => push("/mascotas/registrar")}
+            className="inline-flex cursor-pointer items-center px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 shadow-md"
+          >
+            <FaPlus className="w-4 h-4 mr-2" />
+            Agregar Mascota
+          </button>
+        </div>
       </div>
 
       {animals.length === 0 ? (
@@ -173,13 +180,12 @@ export const ListaMisMascotas = () => {
         </div>
       ) : (
         <>
-          {/* Lista de tarjetas en filas */}
           <div className="p-6">
             <div className="space-y-4">
               {animals.map((animal) => (
                 <MascotaCard
-                openDisponibleModal={openDisponibleModal}
-                openDeleteModal={openDeleteModal}
+                  openDisponibleModal={openDisponibleModal}
+                  openDeleteModal={openDeleteModal}
                   key={animal.id}
                   animal={animal}
                   push={push}
@@ -188,7 +194,6 @@ export const ListaMisMascotas = () => {
             </div>
           </div>
 
-          {/* Paginación */}
           {totalPages > 1 && (
             <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-slate-50 border-t border-gray-200">
               <PaginationControls
@@ -201,12 +206,19 @@ export const ListaMisMascotas = () => {
         </>
       )}
 
-      {/* Modal de confirmación */}
       <Modal
-        confirmButtonClass={confirmModal.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
-        confirmText={confirmModal.type === 'delete' ? 'Eliminar' : 'Confirmar'}
-        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={confirmModal.onConfirm}
+        confirmButtonClass={
+          confirmModal.type === "delete"
+            ? "bg-red-600 hover:bg-red-700"
+            : "bg-blue-600 hover:bg-blue-700"
+        }
+        confirmText={confirmModal.type === "delete" ? "Eliminar" : "Confirmar"}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={
+          confirmModal.type === "delete"
+            ? handleDeleteMascota
+            : handleDisponible
+        }
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
         type="confirm"

@@ -1,4 +1,4 @@
-import { AdoptarApadrinar } from "@/components/adoptar-apadrinar/adoptar-apadrinar";
+import { AdoptarApadrinar } from "@/components/adoptar-apadrinar/AdoptarApadrinar";
 
 export default function Home() {
   return <AdoptarApadrinar />;

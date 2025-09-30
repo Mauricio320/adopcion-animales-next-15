@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import Image from "next/image";
+import { FiX, FiPlus } from "react-icons/fi";
 
 interface MultiImageUploaderProps {
   onImagesChange: (files: File[]) => void;
@@ -45,15 +46,12 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
 
     setError(null);
 
-    // Crear previews
     const newPreviews = newFiles.map(file => URL.createObjectURL(file));
     setPreviews(prev => [...prev, ...newPreviews]);
     setImages(prev => [...prev, ...newFiles]);
 
-    // Notificar al padre
     onImagesChange([...images, ...newFiles]);
 
-    // Limpiar input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -63,7 +61,6 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
     const newImages = images.filter((_, i) => i !== index);
     const newPreviews = previews.filter((_, i) => i !== index);
 
-    // Limpiar URL del preview
     URL.revokeObjectURL(previews[index]);
 
     setImages(newImages);
@@ -88,21 +85,9 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
               <button
                 type="button"
                 onClick={() => handleRemoveImage(index)}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-xl hover:shadow-2xl"
+                className="absolute cursor-pointer top-1 right-1 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-xl hover:shadow-2xl"
               >
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <FiX className="w-3 h-3" />
               </button>
             </div>
           </div>
@@ -113,19 +98,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
           <div className="aspect-square">
             <label className="flex items-center justify-center w-full h-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
               <div className="flex flex-col items-center justify-center text-center px-4">
-                <svg
-                  className="w-8 h-8 mb-2 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
+                <FiPlus className="w-8 h-8 mb-2 text-gray-400" />
                 <p className="text-xs text-gray-500">
                   Agregar imagen
                 </p>

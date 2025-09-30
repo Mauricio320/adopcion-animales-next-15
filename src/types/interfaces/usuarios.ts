@@ -1,4 +1,5 @@
 import { IMunicipio } from "./municipio";
+import { ISolicitudesAdopcionApadrinamiento } from "./solicitudes_adopcion_apadrinamiento";
 import { ITipoDocumento } from "./tipoDocumento";
 import { ITipoPersona } from "./tipoPersona";
 import { ITipoUsuario } from "./tipoUsuario";
@@ -50,6 +51,12 @@ export interface IUsuario {
     albergue_id: number;
     es_propietario: boolean;
   };
+  solicitudes_adopcion_apadrinamiento_usuario_adoptante?: ISolicitudesAdopcionApadrinamiento[];
+  tipo_usuario?: ITipoUsuario;
+  tipo_persona?: ITipoPersona;
+  tipo_documento?: ITipoDocumento;
+  tipo_voluntario?: ITipoVoluntario | null;
+  municipio?: IMunicipio;
 }
 
 export interface IUsuarioWithRelations extends IUsuario {

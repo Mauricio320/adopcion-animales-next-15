@@ -3,7 +3,7 @@
 import RouteGuard from "@/components/auth/RouteGuard";
 import { ContainerPage } from "@/components/common/ContainerPage";
 import { SolicitudAdopcionForm } from "@/components/adoptar-apadrinar/SolicitudAdopcionForm";
-import { RolesEnum } from "@/types/enums/enums";
+import { EstadoAnimalEnum, RolesEnum } from "@/types/enums/enums";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 
@@ -19,8 +19,8 @@ export default function ApadrinamientoPage({ params }: { params: Promise<{ id: s
     <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
       <ContainerPage>
         <SolicitudAdopcionForm
+          estadoId={EstadoAnimalEnum.APADRINADO} 
           animalAlbergueId={parseInt(id)}
-          estadoId={2} // Apadrinamiento
           onSuccess={handleSuccess}
         />
       </ContainerPage>

@@ -6,6 +6,7 @@ import { User } from "@supabase/supabase-js";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { getUsuarioWithActiveAlbergue } from "@/hooks/useUsuarios";
 import { useBlockUI } from "@/contexts/BlockUIContext";
 
 export interface LoginCredentials {
@@ -31,21 +32,14 @@ export function useAuth() {
       showBlockUI("Iniciando sesión...");
       console.log("🔐 Intentando login con:", { email, password: "***" });
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await verifyPassword(email, password);
 
       if (error) throw error;
 
       if (data.user) {
-        const { data: usuarioData } = await supabase
-          .from("usuarios")
-          .select("*")
-          .eq("auth_id", data.user.id)
-          .single();
+        const usuarioData = await getUsuarioWithActiveAlbergue(data.user.id);
 
-        const userWithData = { ...data.user, usuario: usuarioData };
+        const userWithData = { ...data.user, usuario: usuarioData || undefined };
         setUser(userWithData);
         router.push("/dashboard");
         hideBlockUI();
@@ -106,6 +100,13 @@ export function useAuth() {
     }
   };
 
+  const verifyPassword = async (email: string, password: string) => {
+    return await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+  };
+
   const resendConfirmation = async (email: string) => {
     try {
       setError(null);
@@ -131,5 +132,6 @@ export function useAuth() {
     signOut,
     resetPassword,
     resendConfirmation,
+    verifyPassword,
   };
 }
