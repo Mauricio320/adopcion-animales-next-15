@@ -19,6 +19,7 @@ export default function RootLayout({
         <ToastProvider>
           <BlockUIProvider>
             <AuthProvider>
+              {/* comentario */}
               <DataLogin>
                 <LayoutDefault />
                 <div className="w-7xl max-w-[90%] m-auto mt-3">{children}</div>
