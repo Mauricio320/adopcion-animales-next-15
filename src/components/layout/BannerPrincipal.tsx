@@ -12,6 +12,7 @@ export const BannerPrincipal = () => {
           unoptimized
         />
       </div>
+      {/* am */}
       <Image
         src="/img/bienestar-animal.png"
         alt="Gobierno de Colombia"
