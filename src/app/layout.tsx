@@ -1,11 +1,12 @@
 import { LayoutDefault } from "@/components/layout/LayoutDefault";
 import "./globals.css";
-import { DataLogin } from "@/components/data-login/DataLogin";
+
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BlockUIProvider } from "@/contexts/BlockUIContext";
 import { BlockUI } from "@/components/common/BlockUI";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/common/Toast";
+import { DataLogin } from "@/components/data-login/DataLogin";
 
 export default function RootLayout({
   children,
