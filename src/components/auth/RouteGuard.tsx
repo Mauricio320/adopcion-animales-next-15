@@ -32,9 +32,16 @@ export default function RouteGuard({
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
 
+  const useGuestOnly = !user && !guestOnly;
+
   const validLogin = useCallback(() => {
     const isLoggedIn = !!user && !!user.id;
     const userRole = user?.usuario?.rol as RolUsuario;
+
+    if (useGuestOnly) {
+      setIsChecking(false);
+      return router.push("/login");
+    }
 
     if (guestOnly) {
       if (isLoggedIn) {
@@ -71,13 +78,14 @@ export default function RouteGuard({
     router,
     redirectTo,
     redirectIfLoggedIn,
+    useGuestOnly
   ]);
 
   useEffect(() => {
     validLogin();
   }, [validLogin]);
 
-  if (!user) return <AuthLoader />;
+  if (useGuestOnly) return <AuthLoader />;
   if (isChecking) return <AuthLoader />;
 
   return <>{children}</>;
