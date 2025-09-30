@@ -10,27 +10,27 @@ import { ToastContainer } from "@/components/common/Toast";
 import { DataLogin } from "@/components/data-login/dataLogin";
 
 export const metadata: Metadata = {
-  title: "Adopción de Animales - Encuentra tu compañero perfecto",
-  description: "Plataforma dedicada a la adopción y apadrinamiento de animales en necesidad. Conecta con albergues y encuentra a tu nuevo amigo peludo.",
+  title: "Adopción de Animales en Casanare - Encuentra tu compañero perfecto",
+  description: "Plataforma dedicada a la adopción y apadrinamiento de animales en necesidad en Casanare. Conecta con albergues locales y encuentra a tu nuevo amigo peludo.",
   openGraph: {
-    title: "Adopción de Animales",
-    description: "Encuentra tu compañero perfecto en nuestra plataforma de adopción y apadrinamiento.",
+    title: "Adopción de Animales en Casanare",
+    description: "Encuentra tu compañero perfecto en nuestra plataforma de adopción y apadrinamiento en Casanare.",
     images: [
       {
-        url: "/img/banner1-1.png",
+        url: "/img/escudo-gov.png",
         width: 1200,
         height: 630,
-        alt: "Adopción de Animales",
+        alt: "Adopción de Animales en Casanare",
       },
     ],
-    url: "https://banimal.desarrolllocomunitario2025.online", // Reemplaza con tu URL real
+    url: "https://banimal.desarrolllocomunitario2025.online",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Adopción de Animales",
-    description: "Encuentra tu compañero perfecto en nuestra plataforma de adopción y apadrinamiento.",
-    images: ["/img/banner1-1.png"],
+    title: "Adopción de Animales en Casanare",
+    description: "Encuentra tu compañero perfecto en nuestra plataforma de adopción y apadrinamiento en Casanare.",
+    images: ["/img/escudo-gov.png"],
   },
 };
 
