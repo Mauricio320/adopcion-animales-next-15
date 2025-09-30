@@ -221,3 +221,77 @@ export const useSolicitudAdopcion = (id: string | number | undefined) => {
     error,
   };
 };
+
+export const useMyAdaptationApplicationsQuery = ({
+  user_id,
+}: {
+  user_id: number;
+}) => {
+  const [data, setData] = useState<ISolicitudesAdopcionApadrinamiento[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: db, error } = await supabase
+        .from("solicitudes_adopcion_apadrinamiento")
+        .select(
+          `
+          *,
+          activo,
+          Estado:estado_id (*),
+          AnimalAlbergue:animal_albergue_id (
+            *,
+            Estado:estado_id (*),
+            Albergue:albergue_id (
+              *,
+              municipio:municipios (*)
+            ),
+            Animal:animales!animal_id (
+              nombre,
+              imagen_url,
+              edad,
+              especies (
+                nombre
+              ),
+              sexo_animal (
+                nombre
+              ),
+              tipo_edad_animal (
+                nombre
+              ),
+              municipios (
+                nombre
+              )
+            )
+          )
+      `
+        )
+        .eq("usuario_adoptante_id", user_id)
+        .order("id", { ascending: false });
+
+      if (error) throw error;
+
+      setData(db ?? []);
+    } catch (err) {
+      console.error("Error fetching", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  }, [user_id]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return {
+    refetch,
+    loading,
+    error,
+    data,
+  };
+};

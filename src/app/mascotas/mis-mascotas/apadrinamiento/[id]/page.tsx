@@ -16,7 +16,7 @@ export default function ApadrinamientoPage({ params }: { params: Promise<{ id: s
   };
 
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <SolicitudAdopcionForm
           estadoId={EstadoAnimalEnum.APADRINADO} 

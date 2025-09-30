@@ -20,7 +20,7 @@ export default function AdopcionPage({
   };
 
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <SolicitudAdopcionForm
           redirectPath="/mascotas/mis-mascotas/"

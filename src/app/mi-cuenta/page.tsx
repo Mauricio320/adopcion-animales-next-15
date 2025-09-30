@@ -6,7 +6,7 @@ import { RolesEnum } from "@/types/enums/enums";
 
 const page = () => {
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <EditarUsuario />
       </ContainerPage>

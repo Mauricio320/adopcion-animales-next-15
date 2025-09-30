@@ -14,7 +14,7 @@ export default function EditarSeguimientoPage({
   const { id, seguimientoId } = use(params);
 
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <SeguimientoEditarForm seguimientoId={seguimientoId} id={id} />
       </ContainerPage>

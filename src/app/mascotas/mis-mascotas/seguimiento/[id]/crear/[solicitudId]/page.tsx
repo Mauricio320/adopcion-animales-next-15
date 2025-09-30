@@ -20,7 +20,7 @@ export default function CrearSeguimientoPage({
   };
 
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <SeguimientoAdopcionForm
           solicitudId={parseInt(solicitudId)}

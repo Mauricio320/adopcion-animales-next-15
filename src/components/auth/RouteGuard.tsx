@@ -33,6 +33,7 @@ export default function RouteGuard({
   const [isChecking, setIsChecking] = useState(true);
 
   const validLogin = useCallback(() => {
+    if(!user) return router.push('/')
     const isLoggedIn = !!user && !!user.id;
     const userRole = user?.usuario?.rol as RolUsuario;
 
@@ -77,6 +78,8 @@ export default function RouteGuard({
     validLogin();
   }, [validLogin]);
 
+  
+  if (!user) return <AuthLoader />;
   if (isChecking) return <AuthLoader />;
 
   return <>{children}</>;

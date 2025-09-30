@@ -6,7 +6,7 @@ import React from "react";
 
 const page = () => {
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <ListaMisMascotas />
       </ContainerPage>

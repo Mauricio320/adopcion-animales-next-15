@@ -15,7 +15,7 @@ export default function SeguimientoPage({
   const animalAlbergueId = parseInt(id);
 
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <SeguimientoContent animalAlbergueId={animalAlbergueId} />
       </ContainerPage>

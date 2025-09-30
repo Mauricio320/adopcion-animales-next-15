@@ -2,7 +2,7 @@
 
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { ALL_ROLES, RolesEnum, TitleLabels } from "@/types/enums/enums";
+import { RolesEnum, TitleLabels } from "@/types/enums/enums";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -221,7 +221,7 @@ export const Dashboard = () => {
             Revisa el estado de tus solicitudes de adopción y apadrinamiento
           </p>
           <button
-            onClick={() => routes.push("/adopciones")}
+            onClick={() => routes.push("/mis-solicitudes")}
             className="w-full cursor-pointer bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
           >
             Ver Mis Solicitudes

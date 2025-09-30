@@ -1,14 +1,17 @@
 import RouteGuard from "@/components/auth/RouteGuard";
 import { ContainerPage } from "@/components/common/ContainerPage";
-import { EditarMascotaPage } from "@/components/mascotas/EditarMascotaPage";
+import { ListarMisSolicitudes } from "@/components/mis-solicitudes/ListarMisSolicitudes";
 import { RolesEnum } from "@/types/enums/enums";
+import React from "react";
 
-export default function Page() {
+const page = () => {
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
-        <EditarMascotaPage />;
+        <ListarMisSolicitudes />
       </ContainerPage>
     </RouteGuard>
   );
-}
+};
+
+export default page;

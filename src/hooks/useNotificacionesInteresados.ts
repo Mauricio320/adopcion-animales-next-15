@@ -166,3 +166,62 @@ export const UpdateNotificacionInteresadosMutation = async (
     return { error };
   }
 };
+
+export const useGetNotificacionesInteresadosByUser = (userId: number) => {
+  const [data, setData] = useState<INotificacionesInteresadosWithRelations[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: supabaseError } = await supabase
+        .from("notificaciones_interesados")
+        .select(
+          `
+          *,
+          animal_albergue!inner (
+            id,
+            albergue_id,
+            animal_id,
+            activo,
+            es_perdido,
+            estado_id,
+            created_at,
+            updated_at,
+            animal:animal_id (
+              id,
+              nombre,
+              imagen_url,
+              especies:especie_id (nombre),
+              sexo_animal:sexo_id (nombre),
+              edad,
+              tipo_edad_animal:tipo_edad_id (nombre)
+            ),
+            Albergue:albergues(*, municipio:municipios (nombre) )
+          )
+        `
+        )
+        .eq("usuario_envia_id", userId);
+
+      if (supabaseError) throw supabaseError;
+
+      setData(data || []);
+    } catch (err) {
+      console.error("Error fetching notificaciones:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { refetch, loading, error, data };
+};

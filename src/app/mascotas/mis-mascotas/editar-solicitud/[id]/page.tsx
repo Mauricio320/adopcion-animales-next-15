@@ -12,7 +12,7 @@ export default function EditarSolicitudPage({
   const { id } = use(params);
 
   return (
-    <RouteGuard allowedRoles={[RolesEnum.STAFF]}>
+    <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
       <ContainerPage>
         <EditarSolicitud id={id} />
       </ContainerPage>

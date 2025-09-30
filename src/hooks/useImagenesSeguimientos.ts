@@ -1,9 +1,8 @@
 import { supabase } from "@/lib/supabase/client";
-import { ISeguimientosImagenes } from "@/types/interfaces/seguimientos_imagenes";
 import {
-  uploadImageToSupabase,
-  deleteImageFromSupabase,
+  deleteImageFromSupabase
 } from "@/lib/supabase/upload-image";
+import { ISeguimientosImagenes } from "@/types/interfaces/seguimientos_imagenes";
 import { useCallback, useEffect, useState } from "react";
 
 export interface IUseImagenesSeguimientosOptions {

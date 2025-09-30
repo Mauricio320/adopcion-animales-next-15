@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { FaSearch, FaUser } from "react-icons/fa";
 import { buscarUsuarioPorDocumentoConSolicitudes } from "@/hooks/useUsuarios";
 import { IUsuario } from "@/types/interfaces/usuarios";
+import { useState } from "react";
+import { FaSearch } from "react-icons/fa";
 
 interface BuscarUsuarioFormProps {
   onUsuarioEncontrado: (usuario: IUsuario | null) => void;
