@@ -29,7 +29,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="max-w-md mt-[-200px] bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+    <div className="max-w-md m-auto bg-white rounded-lg shadow-lg p-8 border border-gray-200">
       <h2 className="text-2xl font-bold text-center mb-6 text-emerald-800">
         Iniciar Sesión
       </h2>

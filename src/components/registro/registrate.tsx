@@ -200,7 +200,7 @@ export const Registrate = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div >
       {currentStep === 1 ? (
         <RegistrateStep1
           setCurrentStep={setCurrentStep}

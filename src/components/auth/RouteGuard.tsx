@@ -31,9 +31,10 @@ export default function RouteGuard({
   const { user } = useAuthContext();
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const condUserQuestOnly = !user && !guestOnly
 
   const validLogin = useCallback(() => {
-    if(!user) return router.push('/')
+    if(condUserQuestOnly) return router.push('/')
     const isLoggedIn = !!user && !!user.id;
     const userRole = user?.usuario?.rol as RolUsuario;
 
@@ -72,6 +73,7 @@ export default function RouteGuard({
     router,
     redirectTo,
     redirectIfLoggedIn,
+    condUserQuestOnly
   ]);
 
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function RouteGuard({
   }, [validLogin]);
 
   
-  if (!user) return <AuthLoader />;
+  if (condUserQuestOnly) return <AuthLoader />;
   if (isChecking) return <AuthLoader />;
 
   return <>{children}</>;
