@@ -3,7 +3,7 @@
 
 
 import { useBlockUI } from "@/contexts/BlockUIContext";
-import { AuthUser } from "@/hooks/useAuth";
+import { AuthUser } from "@/components/data-login/dataLogin";
 import {
   CreateNotificacionInteresadosMutation,
   useGetOneNotificacionesInteresados,
