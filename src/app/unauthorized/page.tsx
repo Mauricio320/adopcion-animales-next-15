@@ -12,7 +12,6 @@ export default function UnauthorizedPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-8">
         <div className="text-center">
-          {/* Icono de acceso denegado */}
           <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100">
             <svg
               className="h-10 w-10 text-red-600"
