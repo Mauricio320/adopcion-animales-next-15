@@ -8,6 +8,8 @@
 
 Plataforma dedicada a la adopción y apadrinamiento de animales en necesidad en el departamento de Casanare, Colombia. Conecta a ciudadanos con albergues locales para encontrar compañeros peludos perfectos y apoyar el bienestar animal.
 
+🌐 **Demo en Vivo**: [Adopción de Animales - Casanare](https://banimal.desarrolllocomunitario2025.online/)  
+
 ## 🚀 Características Principales
 
 ### Para Usuarios Públicos
