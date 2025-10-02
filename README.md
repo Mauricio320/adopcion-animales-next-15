@@ -128,7 +128,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - **Email**: [btriana33@gmail.com](mailto:btriana33@gmail.com)
 - **GitHub**: [https://github.com/Mauricio320](https://github.com/Mauricio320)
 - **GitLab**: [https://gitlab.com/mauricio320](https://gitlab.com/mauricio320)
-- **LinkedIn**: [https://www.linkedin.com/in/mauricio-t-0a3b1a161/](https://www.linkedin.com/in/mauricio-triana/)
+- **LinkedIn**: [https://www.linkedin.com/in/mauricio-triana/](https://www.linkedin.com/in/mauricio-triana/)
 
 ---
 
