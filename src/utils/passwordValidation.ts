@@ -3,12 +3,17 @@ export interface PasswordRequirement {
   check: () => boolean;
 }
 
+export interface PasswordValidationParams {
+  password: string;
+  confirmPassword: string;
+  includeCurrentPassword?: boolean;
+  currentPassword?: string;
+}
+
 export const getPasswordRequirements = (
-  password: string,
-  confirmPassword: string,
-  includeCurrentPassword: boolean = false,
-  currentPassword: string = ""
+  params: PasswordValidationParams
 ): PasswordRequirement[] => {
+  const { password, confirmPassword, includeCurrentPassword = false, currentPassword = "" } = params;
   const requirements: PasswordRequirement[] = [];
 
   if (includeCurrentPassword) {
@@ -21,7 +26,8 @@ export const getPasswordRequirements = (
   requirements.push(
     {
       text: "Confirmar contraseña coincide",
-      check: () => password === confirmPassword && confirmPassword.trim() !== "",
+      check: () =>
+        password === confirmPassword && confirmPassword.trim() !== "",
     },
     { text: "Al menos 8 caracteres", check: () => password.length >= 8 },
     { text: "Una letra mayúscula", check: () => /[A-Z]/.test(password) },
@@ -36,23 +42,10 @@ export const getPasswordRequirements = (
   return requirements;
 };
 
-export const validatePasswordStrength = (password: string): string[] => {
-  const errors: string[] = [];
-  if (password.length < 8) errors.push("Al menos 8 caracteres");
-  if (!/[A-Z]/.test(password)) errors.push("Una letra mayúscula");
-  if (!/[a-z]/.test(password)) errors.push("Una letra minúscula");
-  if (!/\d/.test(password)) errors.push("Un número");
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-    errors.push("Un carácter especial");
-  return errors;
-};
-
 export const getPasswordStrengthErrors = (
-  password: string,
-  confirmPassword: string,
-  currentPassword: string = "",
-  includeCurrentPassword: boolean = false
+  params: PasswordValidationParams
 ): Record<string, string> => {
+  const { password, confirmPassword, includeCurrentPassword = false, currentPassword = "" } = params;
   const newErrors: Record<string, string> = {};
 
   if (includeCurrentPassword && !currentPassword.trim()) {
@@ -78,16 +71,32 @@ export const getPasswordStrengthErrors = (
 };
 
 export const isPasswordFormValid = (
-  password: string,
-  confirmPassword: string,
-  currentPassword: string = "",
-  includeCurrentPassword: boolean = false
+  params: PasswordValidationParams
 ): boolean => {
+  const { password, confirmPassword, includeCurrentPassword = false, currentPassword = "" } = params;
   const hasPassword = password.trim().length > 0;
   const hasConfirmPassword = confirmPassword.trim().length > 0;
   const passwordsMatch = password === confirmPassword;
   const isStrongPassword = validatePasswordStrength(password).length === 0;
-  const hasCurrentPassword = !includeCurrentPassword || currentPassword.trim().length > 0;
+  const hasCurrentPassword =
+    !includeCurrentPassword || currentPassword.trim().length > 0;
 
-  return hasPassword && hasConfirmPassword && passwordsMatch && isStrongPassword && hasCurrentPassword;
+  return (
+    hasPassword &&
+    hasConfirmPassword &&
+    passwordsMatch &&
+    isStrongPassword &&
+    hasCurrentPassword
+  );
+};
+
+export const validatePasswordStrength = (password: string): string[] => {
+  const errors: string[] = [];
+  if (password.length < 8) errors.push("Al menos 8 caracteres");
+  if (!/[A-Z]/.test(password)) errors.push("Una letra mayúscula");
+  if (!/[a-z]/.test(password)) errors.push("Una letra minúscula");
+  if (!/\d/.test(password)) errors.push("Un número");
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+    errors.push("Un carácter especial");
+  return errors;
 };

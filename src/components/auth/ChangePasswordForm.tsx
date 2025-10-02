@@ -8,13 +8,19 @@ import { supabase } from "@/lib/supabase/client";
 import {
   getPasswordRequirements,
   getPasswordStrengthErrors,
-  isPasswordFormValid
+  isPasswordFormValid,
 } from "@/utils/passwordValidation";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaCheck, FaTimes } from "react-icons/fa";
 
-export const CambioContrasena = () => {
+interface IProps {
+  includeCurrentPassword?: boolean;
+}
+
+export const ChangePasswordForm = ({
+  includeCurrentPassword = true,
+}: IProps) => {
   const { push } = useRouter();
   const { user } = useAuthContext();
   const { showSuccess, showError } = useToast();
@@ -26,37 +32,41 @@ export const CambioContrasena = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const passwordRequirements = getPasswordRequirements(
-    newPassword,
+  const params = {
+    includeCurrentPassword,
+    password: newPassword,
     confirmPassword,
-    true, // includeCurrentPassword
-    currentPassword
-  );
+    currentPassword,
+  };
+
+  const passwordRequirements = getPasswordRequirements(params);
+  const isFormValid = isPasswordFormValid(params);
+  const title = !includeCurrentPassword
+    ? "Restablecer Contraseña"
+    : "Cambiar Contraseña";
+  const subtitle = !includeCurrentPassword
+    ? "Ingresa tu nueva contraseña para completar el proceso de recuperación."
+    : "Actualiza tu contraseña de forma segura";
 
   const handleSubmit = async () => {
-    const newErrors = getPasswordStrengthErrors(
-      newPassword,
-      confirmPassword,
-      currentPassword,
-      true // includeCurrentPassword
-    );
+    const newErrors = getPasswordStrengthErrors(params);
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
 
-    showBlockUI("Cambiando contraseña...");
+    showBlockUI("Actualizando contraseña...");
 
     try {
-      // Verificar contraseña actual
-      const { error: authError } = await verifyPassword(
-        user?.email || "",
-        currentPassword
-      );
-
-      if (authError) {
-        setErrors({ currentPassword: "Contraseña actual incorrecta" });
-        hideBlockUI();
-        return;
+      if (includeCurrentPassword) {
+        const { error: authError } = await verifyPassword(
+          user?.email || "",
+          currentPassword
+        );
+        if (authError) {
+          setErrors({ currentPassword: "Contraseña actual incorrecta" });
+          hideBlockUI();
+          return;
+        }
       }
 
       // Actualizar contraseña
@@ -85,25 +95,16 @@ export const CambioContrasena = () => {
     }
   };
 
-  const isFormValid = isPasswordFormValid(
-    newPassword,
-    confirmPassword,
-    currentPassword,
-    true // includeCurrentPassword
-  );
-
   return (
     <div className="max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-emerald-800 mb-4">
-          Cambiar Contraseña
-        </h1>
-        <p className="text-gray-600">Actualiza tu contraseña de forma segura</p>
-      </div>
-
       <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-emerald-800 mb-4">{title}</h2>
+          <p className="text-gray-600">{subtitle}</p>
+        </div>
+
         {/* Contraseña actual */}
-        <div className="mb-4">
+        <div className="mb-4" hidden={!includeCurrentPassword}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Contraseña actual*
           </label>
