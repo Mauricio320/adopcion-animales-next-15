@@ -88,21 +88,12 @@ export function LoginForm() {
           ¿No tienes cuenta? Regístrate aquí
         </Link>
 
-        <button
-          type="button"
-          className="text-sm text-gray-600 hover:text-gray-500"
-          onClick={() => {
-            const email = prompt(
-              "Ingresa tu correo electrónico para restablecer tu contraseña:"
-            );
-            if (email) {
-              // Aquí podrías implementar resetPassword(email)
-              alert("Se ha enviado un enlace de restablecimiento a tu correo");
-            }
-          }}
+        <Link
+          href="/auth/forgot-password"
+          className="text-sm text-gray-600 hover:text-gray-500 font-medium"
         >
           ¿Olvidaste tu contraseña?
-        </button>
+        </Link>
       </div>
     </div>
   );

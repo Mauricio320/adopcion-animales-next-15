@@ -1,8 +1,7 @@
 "use client";
 
-import RouteGuard from "@/components/auth/RouteGuard";
-import { ContainerPage } from "@/components/common/ContainerPage";
 import { SeguimientoAdopcionForm } from "@/components/adoptar-apadrinar/SeguimientoAdopcionForm";
+import RouteGuard from "@/components/auth/RouteGuard";
 import { RolesEnum } from "@/types/enums/enums";
 import { useRouter } from "next/navigation";
 import { use } from "react";
@@ -21,12 +20,10 @@ export default function CrearSeguimientoPage({
 
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
-      <ContainerPage>
-        <SeguimientoAdopcionForm
-          solicitudId={parseInt(solicitudId)}
-          onSuccess={handleSuccess}
-        />
-      </ContainerPage>
+      <SeguimientoAdopcionForm
+        solicitudId={parseInt(solicitudId)}
+        onSuccess={handleSuccess}
+      />
     </RouteGuard>
   );
 }

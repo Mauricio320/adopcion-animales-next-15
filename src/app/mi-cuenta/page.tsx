@@ -1,15 +1,11 @@
-import React from "react";
-import { EditarUsuario } from "@/components/mi-cuenta/EditarUsuario";
 import RouteGuard from "@/components/auth/RouteGuard";
-import { ContainerPage } from "@/components/common/ContainerPage";
+import { EditarUsuario } from "@/components/mi-cuenta/EditarUsuario";
 import { RolesEnum } from "@/types/enums/enums";
 
 const page = () => {
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
-      <ContainerPage>
-        <EditarUsuario />
-      </ContainerPage>
+      <EditarUsuario />
     </RouteGuard>
   );
 };

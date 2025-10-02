@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { useToast } from "@/contexts/ToastContext";
 import { useBlockUI } from "@/contexts/BlockUIContext";
-import { supabase } from "@/lib/supabase/client";
+import { useToast } from "@/contexts/ToastContext";
 import { useAuth } from "@/hooks/useAuth";
-import { FaCheck, FaTimes } from "react-icons/fa";
+import { supabase } from "@/lib/supabase/client";
+import {
+  getPasswordRequirements,
+  getPasswordStrengthErrors,
+  isPasswordFormValid
+} from "@/utils/passwordValidation";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { FaCheck, FaTimes } from "react-icons/fa";
 
 export const CambioContrasena = () => {
   const { push } = useRouter();
@@ -21,61 +26,20 @@ export const CambioContrasena = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const passwordRequirements = [
-    {
-      text: "Contraseña actual requerida",
-      check: () => currentPassword.trim() !== "",
-    },
-    {
-      text: "Confirmar contraseña coincide",
-      check: () =>
-        newPassword === confirmPassword && confirmPassword.trim() !== "",
-    },
-    { text: "Al menos 8 caracteres", check: () => newPassword.length >= 8 },
-    { text: "Una letra mayúscula", check: () => /[A-Z]/.test(newPassword) },
-    { text: "Una letra minúscula", check: () => /[a-z]/.test(newPassword) },
-    { text: "Un número", check: () => /\d/.test(newPassword) },
-    {
-      text: "Un carácter especial",
-      check: () => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword),
-    },
-  ];
-
-  const validatePasswordStrength = (password: string) => {
-    const errors: string[] = [];
-    if (password.length < 8) errors.push("Al menos 8 caracteres");
-    if (!/[A-Z]/.test(password)) errors.push("Una letra mayúscula");
-    if (!/[a-z]/.test(password)) errors.push("Una letra minúscula");
-    if (!/\d/.test(password)) errors.push("Un número");
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-      errors.push("Un carácter especial");
-    return errors;
-  };
+  const passwordRequirements = getPasswordRequirements(
+    newPassword,
+    confirmPassword,
+    true, // includeCurrentPassword
+    currentPassword
+  );
 
   const handleSubmit = async () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!currentPassword.trim()) {
-      newErrors.currentPassword = "Contraseña actual es requerida";
-    }
-
-    if (!newPassword.trim()) {
-      newErrors.newPassword = "Nueva contraseña es requerida";
-    } else {
-      const strengthErrors = validatePasswordStrength(newPassword);
-      if (strengthErrors.length > 0) {
-        newErrors.newPassword = `Contraseña débil: ${strengthErrors.join(
-          ", "
-        )}`;
-      }
-    }
-
-    if (!confirmPassword.trim()) {
-      newErrors.confirmPassword = "Confirmación de contraseña es requerida";
-    } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = "Las contraseñas no coinciden";
-    }
-
+    const newErrors = getPasswordStrengthErrors(
+      newPassword,
+      confirmPassword,
+      currentPassword,
+      true // includeCurrentPassword
+    );
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
@@ -121,12 +85,12 @@ export const CambioContrasena = () => {
     }
   };
 
-  const isFormValid =
-    currentPassword.trim() &&
-    newPassword.trim() &&
-    confirmPassword.trim() &&
-    newPassword === confirmPassword &&
-    validatePasswordStrength(newPassword).length === 0;
+  const isFormValid = isPasswordFormValid(
+    newPassword,
+    confirmPassword,
+    currentPassword,
+    true // includeCurrentPassword
+  );
 
   return (
     <div className="max-w-md mx-auto">

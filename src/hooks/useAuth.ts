@@ -87,6 +87,8 @@ export function useAuth() {
   };
 
   const resetPassword = async (email: string) => {
+    console.log({email});
+    
     try {
       setError(null);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -125,12 +127,27 @@ export function useAuth() {
     }
   };
 
+  const updatePassword = async (newPassword: string) => {
+    try {
+      setError(null);
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
+      throw err;
+    }
+  };
+
   return {
     loading,
     error,
     signIn,
     signOut,
     resetPassword,
+    updatePassword,
     resendConfirmation,
     verifyPassword,
   };
