@@ -2,7 +2,6 @@
 
 import { SeguimientoEditarForm } from "@/components/adoptar-apadrinar/SeguimientoEditarForm";
 import RouteGuard from "@/components/auth/RouteGuard";
-import { ContainerPage } from "@/components/common/ContainerPage";
 import { RolesEnum } from "@/types/enums/enums";
 import { use } from "react";
 
