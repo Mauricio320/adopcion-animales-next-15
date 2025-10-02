@@ -1,8 +1,7 @@
 "use client";
 
-import RouteGuard from "@/components/auth/RouteGuard";
-import { ContainerPage } from "@/components/common/ContainerPage";
 import { SolicitudAdopcionForm } from "@/components/adoptar-apadrinar/SolicitudAdopcionForm";
+import RouteGuard from "@/components/auth/RouteGuard";
 import { EstadoAnimalEnum, RolesEnum } from "@/types/enums/enums";
 import { useRouter } from "next/navigation";
 import { use } from "react";
@@ -21,14 +20,12 @@ export default function AdopcionPage({
 
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
-      <ContainerPage>
         <SolicitudAdopcionForm
           redirectPath="/mascotas/mis-mascotas/"
           estadoId={EstadoAnimalEnum.ADOPTADO}
           animalAlbergueId={parseInt(id)}
           onSuccess={handleSuccess}
         />
-      </ContainerPage>
     </RouteGuard>
   );
 }

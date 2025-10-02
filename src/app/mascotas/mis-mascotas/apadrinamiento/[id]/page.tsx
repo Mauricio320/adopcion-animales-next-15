@@ -1,13 +1,16 @@
 "use client";
 
-import RouteGuard from "@/components/auth/RouteGuard";
-import { ContainerPage } from "@/components/common/ContainerPage";
 import { SolicitudAdopcionForm } from "@/components/adoptar-apadrinar/SolicitudAdopcionForm";
+import RouteGuard from "@/components/auth/RouteGuard";
 import { EstadoAnimalEnum, RolesEnum } from "@/types/enums/enums";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 
-export default function ApadrinamientoPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ApadrinamientoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
 
@@ -17,13 +20,11 @@ export default function ApadrinamientoPage({ params }: { params: Promise<{ id: s
 
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
-      <ContainerPage>
-        <SolicitudAdopcionForm
-          estadoId={EstadoAnimalEnum.APADRINADO} 
-          animalAlbergueId={parseInt(id)}
-          onSuccess={handleSuccess}
-        />
-      </ContainerPage>
+      <SolicitudAdopcionForm
+        estadoId={EstadoAnimalEnum.APADRINADO}
+        animalAlbergueId={parseInt(id)}
+        onSuccess={handleSuccess}
+      />
     </RouteGuard>
   );
 }

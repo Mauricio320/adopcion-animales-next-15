@@ -1,10 +1,10 @@
 "use client";
 
-import { useAuthContext } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
 import { AuthLoader } from "@/components/common/Loader";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { RolesEnum } from "@/types/enums/enums";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 type RolUsuario = RolesEnum;
 
@@ -18,6 +18,7 @@ interface RouteGuardProps {
   // Configuración de redirección
   redirectTo?: string; // URL personalizada de redirección
   redirectIfLoggedIn?: string; // URL si está logueado (para guestOnly)
+  isContainerPage?: boolean; // Si el contenido está dentro de un ContainerPage
 }
 
 export default function RouteGuard({
@@ -27,6 +28,7 @@ export default function RouteGuard({
   guestOnly = false,
   redirectTo = "/login",
   redirectIfLoggedIn = "/dashboard",
+  isContainerPage = true,
 }: RouteGuardProps) {
   const { user } = useAuthContext();
   const router = useRouter();
@@ -78,7 +80,7 @@ export default function RouteGuard({
     router,
     redirectTo,
     redirectIfLoggedIn,
-    useGuestOnly
+    useGuestOnly,
   ]);
 
   useEffect(() => {
@@ -88,5 +90,15 @@ export default function RouteGuard({
   if (useGuestOnly) return <AuthLoader />;
   if (isChecking) return <AuthLoader />;
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-5xl mx-auto">
+        {isContainerPage ? (
+          <div className="bg-white rounded-lg shadow-lg p-8">{children}</div>
+        ) : (
+          <>{children}</>
+        )}
+      </div>
+    </div>
+  );
 }

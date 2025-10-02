@@ -1,7 +1,6 @@
 "use client";
 
 import RouteGuard from "@/components/auth/RouteGuard";
-import { ContainerPage } from "@/components/common/ContainerPage";
 import { SeguimientoContent } from "@/components/mascotas/SeguimientoContent";
 import { RolesEnum } from "@/types/enums/enums";
 import { use } from "react";
@@ -16,9 +15,7 @@ export default function SeguimientoPage({
 
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
-      <ContainerPage>
-        <SeguimientoContent animalAlbergueId={animalAlbergueId} />
-      </ContainerPage>
+      <SeguimientoContent animalAlbergueId={animalAlbergueId} />
     </RouteGuard>
   );
 }

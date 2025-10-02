@@ -15,9 +15,7 @@ export default function EditarSeguimientoPage({
 
   return (
     <RouteGuard allowedRoles={[RolesEnum.STAFF, RolesEnum.VETERINARIA]}>
-      <ContainerPage>
-        <SeguimientoEditarForm seguimientoId={seguimientoId} id={id} />
-      </ContainerPage>
+      <SeguimientoEditarForm seguimientoId={seguimientoId} id={id} />
     </RouteGuard>
   );
 }
