@@ -9,7 +9,7 @@ import {
   getPasswordRequirements,
   getPasswordStrengthErrors,
   isPasswordFormValid,
-} from "@/utils/passwordValidation";
+} from "@/utils/helpers/passwordValidation";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaCheck, FaTimes } from "react-icons/fa";
