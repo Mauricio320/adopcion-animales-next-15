@@ -73,37 +73,6 @@ Plataforma dedicada a la adopción y apadrinamiento de animales en necesidad en 
 
    > **Nota**: Obtén estas claves desde tu proyecto de Supabase en [supabase.com](https://supabase.com)
 
-4. **Configura la base de datos**
-
-   - Crea un proyecto en Supabase
-   - Ejecuta las migraciones SQL proporcionadas (si existen)
-   - Configura las políticas de Row Level Security (RLS)
-
-## 📖 Uso
-
-### Desarrollo
-```bash
-yarn dev
-```
-
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
-
-### Producción
-```bash
-yarn build
-yarn start
-```
-
-### Linting
-```bash
-yarn lint
-```
-
-### Commits
-```bash
-yarn commit
-```
-
 ## 📁 Estructura del Proyecto
 
 ```
